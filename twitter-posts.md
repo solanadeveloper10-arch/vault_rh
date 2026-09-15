@@ -16,6 +16,7 @@ Facts to keep straight
 
 | Day | Date | Post | Image |
 |-----|------|------|-------|
+| 0 | 2–3 days before | Thread 0 · tease + teasers T1–T6 | banner-creative |
 | 1 | Tue Sep 15 (launch) | Thread 1 · How it works | 01, 02 |
 | 1 | evening | Post A · launch line | banner-classic |
 | 2 | Sep 16 | Post C · live numbers (treasury, holders) | [img: hero terminal] |
@@ -33,6 +34,80 @@ Facts to keep straight
 | 14 | Sep 28 | Post F · snapshot #02 in 24h | [img: next epoch panel] |
 
 After week 2: every Monday = payout post with real numbers; every Thursday = one educational thread rerun or a chart; daily = live-numbers post C.
+
+---
+
+## Thread 0 — Pre-launch tease (post before Thread 1, no details)
+
+Style: short lines, ticker as a verb, one idea per post, end on a hook. No numbers, no vault names, no dates except "soon".
+
+**1/**
+Every token promises you the moon.
+
+We built a vault instead.
+
+$VAULT · Robinhood Chain · soon.
+
+**2/**
+Here's the whole idea in one line:
+
+your trades pay the vault. the vault pays you.
+
+That's it. That's the post.
+
+**3/**
+No staking. No claiming. No "connect wallet to unlock rewards".
+
+You hold. Money shows up. Different money than the one you hold.
+
+**4/**
+The only thing you'll ever need to do:
+
+don't sell.
+
+The longer you don't, the more it pays. We made patience a multiplier.
+
+**5/**
+Farms, bots, 400-wallet guys: this one's not for you.
+
+If your wallet is empty, it stays empty.
+
+**6/**
+Fee for vault.
+Vault for you.
+
+Contract, date, first snapshot — next post.
+Until then: vault it. 🔒
+
+---
+
+## Standalone teasers (pre-launch, drip 1–2 per day)
+
+**T1**
+what if fees didn't disappear
+
+**T2**
+"wen utility"
+the utility is a bank transfer.
+soon.
+
+**T3**
+you don't farm $VAULT.
+$VAULT farms for you.
+
+**T4**
+holding is the strategy.
+not selling is the alpha.
+vault it.
+
+**T5**
+some tokens have a roadmap.
+ours has a vault door.
+🔒 soon.
+
+**T6**
+Snapchat had "send nudes."
+Robinhood Chain gets "vault it."
 
 ---
 
