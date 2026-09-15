@@ -1,5 +1,5 @@
 /* Real on-chain data via JSON-RPC (no simulation):
-   - Holder score: eth_call balanceOf / totalSupply / decimals → pass if balance ≥ 0.001% of supply
+   - Holder score: eth_call balanceOf at the token contract → pass if the wallet holds any $VAULT
    - Holder scan: eth_getLogs Transfer events → scanned (ever received), verified (balance > 0 now), excluded (difference) */
 (function () {
   'use strict';
@@ -41,21 +41,18 @@
     if (!url) { title.textContent = 'RPC not configured'; title.className = 'v'; return; }
     title.textContent = 'Checking on-chain…'; title.className = 'v';
     try {
-      let bal, sup, dec, pct, holding, pass, unit;
-      if (isAddr(tk)) {                                   // token mode: $VAULT balance vs supply
-        const [balHex, supHex, decHex] = await Promise.all([call(url, tk, SEL.balanceOf + pad(a)), call(url, tk, SEL.totalSupply), call(url, tk, SEL.decimals).catch(() => '0x12')]);
-        bal = BigInt(balHex); sup = BigInt(supHex); dec = parseInt(decHex, 16) || 18; unit = 'VAULT';
-        if (sup === 0n) throw new Error('totalSupply is 0');
-        pct = Number(bal * 100000000n / sup) / 1000000; holding = bal > 0n; pass = pct >= 0.001;
-      } else {                                            // wallet mode: native balance on Robinhood Chain
-        bal = BigInt(await rpc(url, 'eth_getBalance', [a, 'latest'])); dec = 18; unit = 'ETH'; sup = 0n;
-        holding = bal > 0n; pass = holding; pct = null;
+      let bal, dec, unit;
+      if (isAddr(tk)) {                                   // token balance at the $VAULT contract
+        const [balHex, decHex] = await Promise.all([call(url, tk, SEL.balanceOf + pad(a)), call(url, tk, SEL.decimals).catch(() => '0x12')]);
+        bal = BigInt(balHex); dec = parseInt(decHex, 16) || 18; unit = 'VAULT';
+      } else {                                            // contract not deployed yet: native balance on Robinhood Chain
+        bal = BigInt(await rpc(url, 'eth_getBalance', [a, 'latest'])); dec = 18; unit = 'ETH';
       }
-      setRow('hold', holding ? 'ok' : 'bad', holding ? fmtBig(bal, dec) + ' ' + unit : '0 ' + unit);
-      setRow('min', pass ? 'ok' : 'bad', pct === null ? (pass ? 'funded wallet' : 'empty wallet') : pct.toFixed(4) + '%');
-      setRow('cluster', 'ok', 'clear');                                  // v0.1: balance is the only gate
+      const pass = bal > 0n;
+      setRow('hold', pass ? 'ok' : 'bad', fmtBig(bal, dec) + ' ' + unit);
+      setRow('cluster', 'ok', 'clear');                                  // v0.1: the token balance is the only gate
       setRow('activity', 'ok', 'clear');
-      const score = pass ? 100 : holding ? 40 : 0;
+      const score = pass ? 100 : 0;
       const ring = $('#scoreRing'); ring.style.setProperty('--p', score); ring.style.setProperty('--ring', pass ? 'var(--lime)' : 'var(--red)');
       $('#scoreVal').textContent = score; $('#scoreVal').className = 'mono ' + (pass ? 'lime' : 'red');
       title.textContent = pass ? 'Eligible' : 'Sybil';

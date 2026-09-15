@@ -90,9 +90,9 @@ ax.set_ylim(0, 1850); ax.text(0, 1600, "in USDC, for that one week.\nHold less t
 save(f, "05_per_holder.png")
 
 # 06 holder check: eligible vs sybil
-f = fig("Who gets paid: one check, on-chain", "Wallet holds $VAULT on Robinhood Chain → Eligible. Empty wallet → Sybil. Checked live via RPC, nothing to submit.")
+f = fig("Who gets paid: one check, on-chain", "Wallet holds $VAULT at the token contract → Eligible. Zero balance → Sybil. Checked live via RPC, nothing to submit.")
 ax = f.add_axes([0.05, 0.18, 0.9, 0.58]); ax.set_xlim(0, 100); ax.set_ylim(0, 10); ax.axis("off")
-for x, col, tcol, head, sub in [(4, LIME, BG, "ELIGIBLE", "balance ≥ 0.001% of supply\nverified · paid every Monday"), (54, RED, TEXT, "SYBIL", "0 balance on Robinhood Chain\nexcluded · gets nothing")]:
+for x, col, tcol, head, sub in [(4, LIME, BG, "ELIGIBLE", "holds $VAULT at the contract\nverified · paid every Monday"), (54, RED, TEXT, "SYBIL", "holds no $VAULT\nexcluded · gets nothing")]:
     ax.add_patch(FancyBboxPatch((x, 1.5), 42, 7, boxstyle="round,pad=0,rounding_size=1", fc=col, ec="none"))
     ax.text(x + 21, 6.3, head, ha="center", va="center", fontsize=44, fontweight="bold", color=tcol, family=MONO)
     ax.text(x + 21, 3.4, sub, ha="center", va="center", fontsize=17, color=tcol, alpha=.85)
