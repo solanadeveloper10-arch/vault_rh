@@ -59,6 +59,7 @@ That's it. That's the post.
 No staking. No claiming. No "connect wallet to unlock rewards".
 
 You hold. Money shows up. Different money than the one you hold.
+`[chart: 11_no_staking]`
 
 **4/**
 The only thing you'll ever need to do:
@@ -342,5 +343,6 @@ $VAULT on Robinhood Chain. 100% of the 3% trade fee is deposited into the top-AP
 | 08_multiplier_curve | T4/2, H | Multiplier by days held, ×2 at 7, ×4 at 27 |
 | 09_days_held_payout | T4/3, D | 1M tokens, payout by days held |
 | 10_treasury_vs_pool | T4/5 | Principal stays, yield paid weekly |
+| 11_no_staking | T0/3 | No staking / claiming, you hold, USDC shows up |
 
 Regenerate after changing numbers: `python3 charts/gen_charts.py`

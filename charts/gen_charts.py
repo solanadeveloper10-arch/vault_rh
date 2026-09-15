@@ -16,11 +16,12 @@ plt.rcParams.update({"font.family": SANS, "text.color": TEXT, "axes.edgecolor": 
                      "figure.facecolor": BG, "axes.facecolor": BG, "savefig.facecolor": BG})
 FOOT = r"\$VAULT  ·  simulated numbers, conservative 100% vault APR  ·  not financial advice"
 
-def fig(title, sub=None):
+def fig(title, sub=None, foot=True):
     f = plt.figure(figsize=(16, 9), dpi=100)
     f.text(0.05, 0.92, title, fontsize=34, fontweight="bold", va="top")
     if sub: f.text(0.05, 0.835, sub, fontsize=19, color=MUTED, va="top")
-    f.text(0.05, 0.045, FOOT, fontsize=13, color=MUTED, family=MONO); f.text(0.95, 0.045, r"\$VAULT", fontsize=13, color=LIME, family=MONO, ha="right")
+    if foot: f.text(0.05, 0.045, FOOT, fontsize=13, color=MUTED, family=MONO)
+    f.text(0.95, 0.045, r"\$VAULT", fontsize=13, color=LIME, family=MONO, ha="right")
     return f
 def clean(ax, left=False, bottom=True):
     for s in ax.spines.values(): s.set_visible(False)
@@ -32,11 +33,11 @@ def lab(ax, x, y, t, size=22, color=TEXT): ax.text(x, y, t, ha="center", va="bot
 def mult(d): return 0 if d <= 0 else round(d * 2 / 7, 2) if d <= 7 else min(4, round(2 + (d - 7) * 0.1, 2))
 
 # 01 fee: 100% to vault
-f = fig(r"Every \$100 traded → \$3 goes into the vault", "3% fee on every buy and sell. 100% of it goes to the treasury on Hyperliquid.")
+f = fig(r"Every \$100 traded → \$3 goes into the vault", "3% fee on every buy and sell. 100% of it goes to the treasury on Hyperliquid.", foot=False)
 ax = f.add_axes([0.05, 0.34, 0.9, 0.34]); clean(ax, bottom=False)
 ax.barh([0], [100], color=LIME, height=0.55); ax.set_xlim(0, 100); ax.set_ylim(-0.6, 0.6)
 ax.text(50, 0, "100%  →  vault treasury", ha="center", va="center", fontsize=28, fontweight="bold", color=BG)
-f.text(0.05, 0.26, "Team: 0% of the fee, 0% of supply. We earn 1% of each week’s yield, after the epoch, same as you.", fontsize=19)
+f.text(0.05, 0.26, "Team: 0% of the fee, 0% of supply. Team earns 1% of each week’s yield, after the epoch, same as you.", fontsize=19)
 save(f, "01_fee_split.png")
 
 # 02 flow
@@ -140,3 +141,18 @@ for i in range(8):
 ax.set_ylim(0, 4.1); ax.legend(loc="upper left", fontsize=16, frameon=False, labelcolor=TEXT)
 save(f, "10_treasury_vs_pool.png")
 print("pools", [round(p) for p in pools], "per1M", round(pool8*1e6/elig))
+
+# 11 no staking / no claiming
+f = fig("No staking. No claiming. No “connect wallet to unlock rewards”.", None, foot=False)
+ax = f.add_axes([0.05, 0.14, 0.9, 0.66]); ax.set_xlim(0, 100); ax.set_ylim(0, 10); ax.axis("off")
+for i, t in enumerate(["Staking", "Claiming", "Connect wallet to unlock"]):
+    y = 8.2 - i * 2.6
+    ax.add_patch(FancyBboxPatch((2, y - 0.9), 40, 1.8, boxstyle="round,pad=0,rounding_size=0.9", fc=PANEL, ec=LINE, lw=1.5))
+    ax.text(22, y, t, ha="center", va="center", fontsize=24, color=MUTED)
+    ax.plot([5, 39], [y, y], color=RED, lw=4, solid_capstyle="round")
+ax.add_patch(FancyBboxPatch((50, 1.2), 48, 8.4, boxstyle="round,pad=0,rounding_size=1.2", fc=LIME, ec="none"))
+ax.text(74, 6.9, "You hold.", ha="center", va="center", fontsize=52, fontweight="bold", color=BG)
+ax.text(74, 4.4, "Money shows up.", ha="center", va="center", fontsize=40, fontweight="bold", color=BG)
+ax.text(74, 2.4, "$VAULT in your wallet  ·  USDC in your wallet", ha="center", va="center", fontsize=16, color="#3d4a00", family=MONO)
+ax.annotate("", xy=(49, 5.4), xytext=(43.5, 5.4), arrowprops=dict(arrowstyle="-|>", color=LIME, lw=3, mutation_scale=28))
+save(f, "11_no_staking.png")
