@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault — trade fees become weekly USDC</title>
+  <link rel="icon" href="logo-mark.svg" type="image/svg+xml">
+  <meta name="description" content="Trading fees are routed into the most profitable Hyperliquid vault and the yield is paid every week in USDC to verified, non-sybil holders.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<header class="nav">
+  <div class="nav__inner">
+    <a href="#top" class="logo">
+      <svg class="logo__mark" viewBox="0 0 28 28" aria-hidden="true">
+        <rect width="28" height="28" rx="7" fill="#CCFF00"/>
+        <circle cx="14" cy="10.6" r="4.1" fill="#110E08"/>
+        <path d="M11.5 12.2h5L14 21.8z" fill="#110E08"/>
+      </svg>
+      <span>Vault</span>
+    </a>
+    <nav class="nav__links">
+      <a href="#vaults">Vaults</a>
+      <a href="#yield">Yield</a>
+      <a href="#distribution">Distribution</a>
+      <a href="#holders">Real holders</a>
+      <a href="#token">Token</a>
+    </nav>
+    <div class="nav__actions">
+      <button class="btn btn--primary" id="connectBtn">Connect</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero__glow"></div>
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <div class="eyebrow">
+        <span class="dot dot--live"></span>
+        Just launched · Epoch #01 · Robinhood Chain → HyperEVM
+      </div>
+      <h1>Trade fees in.<br><em>USDC</em> out. Every week.</h1>
+      <p class="lede">
+        Every trade of <b>$VAULT</b> on Robinhood Chain collects a 3% fee. All of it is bridged to
+        HyperEVM and deposited into the most profitable vault on Hyperliquid. Every 7 days the yield
+        is paid out in USDC — only to real, verified holders. The longer you hold, the bigger your share.
+      </p>
+      <div class="hero__cta">
+        <a class="btn btn--ghost btn--lg" href="#how">How it works</a>
+      </div>
+      <div class="hero__meta">
+        <div><span class="k">Fee on trade</span><span class="v mono">3.0%</span></div>
+        <div><span class="k">Routed to vault</span><span class="v mono">100%</span></div>
+        <div><span class="k">Payout</span><span class="v mono">Every 7 days</span></div>
+        <div><span class="k">Eligible</span><span class="v mono">Verified only</span></div>
+      </div>
+    </div>
+
+    <!-- Treasury terminal -->
+    <div class="terminal">
+      <div class="terminal__bar">
+        <span class="terminal__title">TREASURY · EPOCH #01</span>
+        <span class="terminal__tag"><span class="dot dot--live"></span> HyperEVM · bridged from Robinhood Chain</span>
+      </div>
+      <div class="terminal__body">
+        <div class="stat stat--big">
+          <span class="k" id="tTvlLabel">Treasury in vault · since launch today</span>
+          <span class="v mono" id="tTvl">$6,200</span>
+          <span class="delta up mono" id="tTvlDelta">+$6,200 (today)</span>
+        </div>
+        <canvas id="heroChart" class="terminal__chart" height="140"></canvas>
+        <div class="terminal__grid">
+          <div class="stat"><span class="k">Active vault</span><span class="v" id="tVault">BredoStrategy</span></div>
+          <div class="stat"><span class="k">Vault APR (30d)</span><span class="v mono up" id="tApr">1045.63%</span></div>
+          <div class="stat"><span class="k">Next payout in</span><span class="v mono" id="countdown">16d 08h 41m</span></div>
+          <div class="stat"><span class="k">Verified holders</span><span class="v mono" id="tHolders">— <span class="muted">/ run scan</span></span></div>
+        </div>
+        <div class="terminal__foot mono">
+          <span>launched today · Sep 15</span><span>·</span><span>no payouts yet</span><span>·</span><span>first snapshot Sep 22</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TICKER ===== -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker__track" id="tickerTrack"></div>
+</div>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section__head">
+      <span class="label">01 — Mechanism</span>
+      <h2>Fees in. Yield out. <em>Real holders only.</em></h2>
+    </div>
+    <div class="flow">
+      <div class="flow__step">
+        <div class="flow__num mono">01</div>
+        <h3>Trade fee · Robinhood Chain</h3>
+        <p>3% on every buy and sell of $VAULT on Robinhood Chain. 100% of it goes to the treasury.</p>
+        <div class="flow__pill mono">→ 3% of volume</div>
+      </div>
+      <div class="flow__step">
+        <div class="flow__num mono">02</div>
+        <h3>Bridge → HyperEVM vault</h3>
+        <p>Fees are bridged to HyperEVM and deposited into the top-APR Hyperliquid vault (TVL ≥ $1M, age ≥ 120d). Auto-rotated weekly.</p>
+        <div class="flow__pill mono">→ APR compounding</div>
+      </div>
+      <div class="flow__step">
+        <div class="flow__num mono">03</div>
+        <h3>Weekly epoch</h3>
+        <p>Every Monday 00:00 UTC vault yield is snapshotted and split among eligible wallets by balance × days held. Team takes 1% of that yield, nothing else.</p>
+        <div class="flow__pill mono">→ USDC payout</div>
+      </div>
+      <div class="flow__step">
+        <div class="flow__num mono">04</div>
+        <h3>Sybil shield</h3>
+        <p>Only wallets that pass the holder-score check receive a share. Farms and clusters are excluded.</p>
+        <div class="flow__pill mono">→ bigger slice for you</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== VAULTS ===== -->
+<section class="section" id="vaults">
+  <div class="container">
+    <div class="section__head section__head--row">
+      <div>
+        <span class="label">02 — Vault rotation</span>
+        <h2>The engine <em>picks itself.</em></h2>
+        <p class="sub">Every week the treasury automatically rotates into the most profitable Hyperliquid vault that passes the risk policy. No voting, no manual choice.</p>
+      </div>
+      <div class="seg" id="rangeSeg">
+        <button class="seg__btn" data-range="7D">7D</button>
+        <button class="seg__btn is-active" data-range="30D">30D</button>
+        <button class="seg__btn" data-range="ALL">All</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="table-wrap">
+        <table class="table" id="vaultTable">
+          <thead>
+            <tr>
+              <th>Vault</th>
+              <th>Leader</th>
+              <th class="num">APR</th>
+              <th class="num">TVL</th>
+              <th class="num">Age (days)</th>
+              <th class="num">Risk</th>
+              <th>Snapshot</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="vault-detail" id="vaultDetail"></div>
+  </div>
+</section>
+
+<!-- ===== YIELD CALCULATOR ===== -->
+<section class="section section--alt" id="yield">
+  <div class="container">
+    <div class="section__head">
+      <span class="label">03 — Expected income</span>
+      <h2>How much do <em>you</em> get this week?</h2>
+      <p class="sub">Three numbers in, one number out. Uses this week's auto-selected vault.</p>
+    </div>
+
+    <div class="scalc panel">
+      <div class="scalc__inputs">
+        <div class="field">
+          <label for="tokens">Your $VAULT balance</label>
+          <div class="field__box">
+            <input type="number" id="tokens" class="mono" value="1000000" min="0" step="1000" inputmode="numeric">
+            <span class="field__unit mono">VAULT</span>
+          </div>
+          <div class="presets" data-for="tokens">
+            <button type="button" data-v="100000">100K</button>
+            <button type="button" data-v="1000000">1M</button>
+            <button type="button" data-v="5000000">5M</button>
+            <button type="button" data-v="20000000">20M</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="dvol">Daily trading volume</label>
+          <div class="field__box">
+            <span class="field__unit mono">$</span>
+            <input type="number" id="dvol" class="mono" value="500000" min="0" step="10000" inputmode="numeric">
+          </div>
+          <div class="presets" data-for="dvol">
+            <button type="button" data-v="100000">$100K</button>
+            <button type="button" data-v="500000">$500K</button>
+            <button type="button" data-v="1000000">$1M</button>
+            <button type="button" data-v="5000000">$5M</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="days">Days held without selling</label>
+          <div class="field__box">
+            <input type="number" id="days" class="mono" value="7" min="0" max="365" step="1" inputmode="numeric">
+            <span class="field__unit mono">days</span>
+          </div>
+          <div class="presets" data-for="days">
+            <button type="button" data-v="0">0</button>
+            <button type="button" data-v="3">3</button>
+            <button type="button" data-v="7">7</button>
+            <button type="button" data-v="14">14</button>
+            <button type="button" data-v="30">30</button>
+          </div>
+        </div>
+        <div class="scalc__vault">
+          <span class="k">Vault this week · auto-selected</span>
+          <span class="v" id="calcVaultName">—</span>
+          <span class="mono up" id="calcVaultApr">—</span>
+        </div>
+      </div>
+
+      <div class="scalc__result">
+        <span class="k">Your payout this epoch (7 days)</span>
+        <span class="scalc__big mono lime" id="rMonth">$0</span>
+        <span class="scalc__day mono muted"><span id="rDay">$0</span> / day · paid in USDC every Monday</span>
+        <ul class="breakdown">
+          <li><span>Fees to vault this week</span><span class="mono" id="bFees">$0</span></li>
+          <li><span>Vault yield this week</span><span class="mono" id="bYield">$0</span></li>
+          <li><span>Team share · 1% of yield, after the epoch</span><span class="mono" id="bTeam">$0</span></li>
+          <li><span>Holder pool (99%)</span><span class="mono" id="bPool">$0</span></li>
+          <li><span>Your share of eligible supply</span><span class="mono" id="bShare">0%</span></li>
+          <li><span>Hold multiplier</span><span class="mono" id="bMult">×2 <span class="muted" id="bMultNote">· 7 days held</span></span></li>
+        </ul>
+        <p class="fine">3% fee · 100% to vault · treasury since launch $6.2K · yield = (treasury + fees) × APR ÷ 52 · team takes 1% of yield after each epoch, 0% of fees · your share = balance × hold multiplier ÷ all verified balances × their multipliers (avg ×2 assumed). Vault returns vary and can be negative.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DISTRIBUTION ===== -->
+<section class="section" id="distribution">
+  <div class="container">
+    <div class="section__head">
+      <span class="label">04 — Distribution</span>
+      <h2>One epoch. <em>Every 7 days.</em></h2>
+    </div>
+    <div class="dist">
+      <div class="panel dist__timeline">
+        <div class="panel__title">Epoch timeline</div>
+        <ol class="epochs" id="epochs"></ol>
+      </div>
+      <div class="dist__side">
+        <div class="panel next">
+          <span class="k">Next epoch</span>
+          <span class="v serif">Epoch #01</span>
+          <div class="next__row"><span>Snapshot</span><span class="mono">Sep 22 · 00:00 UTC</span></div>
+          <div class="next__row"><span>Payout window</span><span class="mono">Sep 22 → Sep 23</span></div>
+          <div class="next__row"><span>Launched</span><span class="mono">Sep 15 · 2026 · today</span></div>
+          <div class="next__row"><span>Estimated pool</span><span class="mono lime" id="nextPool">$108,900</span></div>
+          <div class="progress"><div class="progress__bar" id="epochProgress"></div></div>
+          <span class="fine mono" id="epochProgressLabel">0% of epoch elapsed</span>
+        </div>
+        <div class="panel rules">
+          <div class="panel__title">Rules</div>
+          <ul>
+            <li><b>Pro-rata</b> — share = your eligible balance ÷ total eligible balance.</li>
+            <li><b>Days held = multiplier</b> — grows every single day: 0 days ×0, day 1 ×0.29 … day 7 ×2, then +0.1 per day up to ×4 at day 27.</li>
+            <li><b>Share</b> — your balance × your multiplier ÷ the sum of everyone's. A 27-day holder earns 2× a 7-day holder and 14× a 1-day holder per token.</li>
+            <li><b>Paid in USDC</b> — every Monday, directly to your wallet, no claim needed.</li>
+            <li><b>Principal stays</b> — only vault yield is distributed; the treasury keeps compounding.</li>
+            <li><b>Team earns with you</b> — 1% of each epoch's yield, taken after the snapshot. 0% of trade fees, 0% of supply.</li>
+            <li><b>Auto-rotation</b> — on each snapshot the treasury moves to the best vault that passes policy.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REAL HOLDERS / SYBIL ===== -->
+<section class="section section--alt" id="holders">
+  <div class="container">
+    <div class="section__head">
+      <span class="label">05 — Sybil shield</span>
+      <h2>Money goes to <em>enthusiasts</em>, not farms.</h2>
+      <p class="sub">Verified holders are the wallets that actually hold the token right now. Everyone who bought once and sold out is excluded from the payout.</p>
+    </div>
+
+    <div class="sybil">
+      <div class="panel checker">
+        <div class="panel__title">Holder score check</div>
+        <div class="checker__input">
+          <input id="addrInput" class="mono" placeholder="0x… paste a wallet address" spellcheck="false">
+          <button class="btn btn--primary" id="checkBtn">Check</button>
+        </div>
+        <div class="checker__result" id="checkerResult">
+          <div class="score">
+            <div class="score__ring" id="scoreRing" style="--p:0">
+              <span class="mono" id="scoreVal">—</span>
+            </div>
+            <div class="score__text">
+              <span class="v" id="scoreTitle">Enter an address</span>
+              <span class="muted" id="scoreSub">Scores refresh every epoch snapshot.</span>
+            </div>
+          </div>
+          <ul class="criteria" id="criteria">
+            <li data-key="hold"><span class="crit__ico"></span><span>Holding $VAULT right now</span><span class="mono crit__val">—</span></li>
+            <li data-key="min"><span class="crit__ico"></span><span>Balance ≥ 0.001% of supply</span><span class="mono crit__val">—</span></li>
+            <li data-key="cluster"><span class="crit__ico"></span><span>Not funded from a known cluster</span><span class="mono crit__val">—</span></li>
+            <li data-key="activity"><span class="crit__ico"></span><span>Organic on-chain activity</span><span class="mono crit__val">—</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel cluster">
+        <div class="panel__title">Cluster detection <span class="muted" id="scanMeta">· last snapshot</span></div>
+        <svg class="cluster__svg" id="clusterSvg" viewBox="0 0 520 300" aria-label="Wallet cluster graph"></svg>
+        <div class="cluster__legend">
+          <span><i class="sw sw--lime"></i>Verified holder</span>
+          <span><i class="sw sw--red"></i>Flagged sybil cluster</span>
+          <span><i class="sw sw--grey"></i>Pending</span>
+        </div>
+        <div class="cluster__stats">
+          <div><span class="k">Wallets scanned</span><span class="v mono" id="wScanned">—</span></div>
+          <div><span class="k">Verified</span><span class="v mono lime" id="wVerified">—</span></div>
+          <div><span class="k">Excluded</span><span class="v mono red" id="wExcluded">—</span></div>
+          <div><span class="k">Excluded %</span><span class="v mono" id="wExcludedPct">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel loyal">
+      <div class="panel__title">Days held = your multiplier <span class="muted">· simple, and it favours patience</span></div>
+      <div class="loyal__grid">
+        <div class="loyal__cards">
+          <div class="lcard">
+            <span class="lcard__n mono">A</span>
+            <b>Count the days</b>
+            <p>Your payout is your balance × a multiplier that depends only on <em>how many days you have held without selling</em>. Nothing else to track.</p>
+          </div>
+          <div class="lcard">
+            <span class="lcard__n mono">B</span>
+            <b>Every day counts</b>
+            <p>0 days → nothing. Each day adds to the multiplier: day 1 ×0.29, day 4 ×1.14, day 7 → <em>×2</em>. After a week it keeps climbing +0.1 per day until ×4 at day 27. No cliffs, no waiting for a tier.</p>
+          </div>
+          <div class="lcard">
+            <span class="lcard__n mono">C</span>
+            <b>Free exit</b>
+            <p>No lock, no claim. Sell any amount and the day counter restarts from 0 for the part you sold; the part you keep holds its days. Buying more starts a new counter for the new coins.</p>
+          </div>
+        </div>
+        <div class="loyal__sim">
+          <div class="loyal__sim-head"><span class="k">Try it</span><span class="v">Days held without selling → multiplier</span></div>
+          <div class="ctrl">
+            <div class="ctrl__head"><label for="heldDays">Days held without selling</label><span class="mono" id="heldDaysOut">7 days</span></div>
+            <input type="range" id="heldDays" min="0" max="45" value="7">
+          </div>
+          <canvas id="loyalChart" height="120"></canvas>
+          <div class="loyal__out">
+            <div><span class="k">Your multiplier</span><span class="v mono lime" id="loyalKeep">—</span></div>
+            <div><span class="k">vs. a 7-day holder</span><span class="v mono" id="loyalStreak">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TOKEN ===== -->
+<section class="section" id="token">
+  <div class="container">
+    <div class="section__head">
+      <span class="label">06 — Token</span>
+      <h2>$VAULT <em>economics.</em></h2>
+    </div>
+    <div class="tok">
+      <div class="panel tok__chart">
+        <canvas id="feeChart" width="260" height="260"></canvas>
+        <div class="tok__legend" id="feeLegend"></div>
+      </div>
+      <div class="tok__facts">
+        <div class="fact panel"><span class="k">Total supply</span><span class="v mono">1,000,000,000</span></div>
+        <div class="fact panel"><span class="k">Ticker</span><span class="v mono">$VAULT</span></div>
+        <div class="fact panel"><span class="k">Token chain</span><span class="v">Robinhood Chain</span></div>
+        <div class="fact panel"><span class="k">Team</span><span class="v mono">0% supply · 1% of epoch yield</span></div>
+        <div class="fact panel"><span class="k">Treasury chain</span><span class="v">HyperEVM · 3/5 multisig</span></div>
+        <div class="fact panel"><span class="k">Vault rotation</span><span class="v">Automatic, weekly</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta">
+  <div class="container cta__inner">
+    <h2>Fee for vault. <em>Vault for you.</em></h2>
+    <p>Trade fees → Hyperliquid vault → USDC for loyal holders.</p>
+    <div class="hero__cta">
+      <button class="btn btn--primary btn--lg">Buy $VAULT</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer" id="docs">
+  <div class="container footer__inner">
+    <div>
+      <div class="logo logo--sm"><svg class="logo__mark logo__mark--sm" viewBox="0 0 28 28" aria-hidden="true">
+        <rect width="28" height="28" rx="7" fill="#CCFF00"/>
+        <circle cx="14" cy="10.6" r="4.1" fill="#110E08"/>
+        <path d="M11.5 12.2h5L14 21.8z" fill="#110E08"/>
+      </svg><span>Vault</span></div>
+      <p class="fine">Prototype UI. Not financial advice. Vault performance on Hyperliquid can be negative; distributions depend on realised yield. Nothing here is a guarantee of return.</p>
+    </div>
+    <div class="footer__cols">
+      <div><b>Product</b><a href="#vaults">Vaults</a><a href="#yield">Yield</a><a href="#distribution">Distribution</a></div>
+      <div><b>Community</b><a href="#">X / Twitter</a><a href="#">Telegram</a><a href="#">Discord</a></div>
+      <div><b>Legal</b><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Risk</a></div>
+    </div>
+  </div>
+  <div class="footer__status mono"><span class="dot dot--live"></span> Online · Token: Robinhood Chain · Treasury: HyperEVM · Epoch #01 · v0.1 UI prototype</div>
+</footer>
+
+<script src="app.js"></script>
+<script src="chain.js"></script>
+</body>
+</html>
