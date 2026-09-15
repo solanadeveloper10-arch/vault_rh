@@ -9,8 +9,8 @@
   const ZERO = '0x0000000000000000000000000000000000000000';
   /* ===== CONFIG — fill these in; no UI on the site ===== */
   const CONFIG = {
-    RPC: 'https://rpc.hyperliquid.xyz/evm',   // Robinhood Chain RPC URL goes here
-    TOKEN: '',                                 // $VAULT ERC-20 contract address
+    RPC: 'https://rpc.mainnet.chain.robinhood.com',   // Robinhood Chain mainnet (chain id 4663)
+    TOKEN: '',                                 // $VAULT ERC-20 contract address (empty = check native ETH balance on Robinhood Chain)
     FEE_WALLET: '',                            // wallet receiving the 3% fee → shown as TREASURY
     FROM_BLOCK: null,                          // token deploy block (null = last 200k blocks)
   };
@@ -36,23 +36,29 @@
     const title = $('#scoreTitle'), sub = $('#scoreSub');
     const row = k => $('#criteria li[data-key=' + k + ']'); const setRow = (k, cls, v) => { const li = row(k); li.className = cls; $('.crit__val', li).textContent = v; };
     if (!isAddr(a)) { title.textContent = 'Enter a valid 0x address'; sub.textContent = '40 hex characters after 0x.'; return; }
-    if (!isAddr(tk) || !url) { title.textContent = 'Token contract not configured'; sub.textContent = 'Set CONFIG.TOKEN in chain.js.'; return; }
+    if (!url) { title.textContent = 'RPC not configured'; sub.textContent = 'Set CONFIG.RPC in chain.js.'; return; }
     title.textContent = 'Checking on-chain…'; sub.textContent = new URL(url).host;
     try {
-      const [balHex, supHex, decHex] = await Promise.all([call(url, tk, SEL.balanceOf + pad(a)), call(url, tk, SEL.totalSupply), call(url, tk, SEL.decimals).catch(() => '0x12')]);
-      const bal = BigInt(balHex), sup = BigInt(supHex), dec = parseInt(decHex, 16) || 18;
-      if (sup === 0n) throw new Error('totalSupply is 0');
-      const pct = Number(bal * 100000000n / sup) / 1000000;
-      const holding = bal > 0n, pass = pct >= 0.001;
-      setRow('hold', holding ? 'ok' : 'bad', holding ? fmtBig(bal, dec) + ' VAULT' : '0');
-      setRow('min', pass ? 'ok' : 'bad', pct.toFixed(4) + '%');
+      let bal, sup, dec, pct, holding, pass, unit;
+      if (isAddr(tk)) {                                   // token mode: $VAULT balance vs supply
+        const [balHex, supHex, decHex] = await Promise.all([call(url, tk, SEL.balanceOf + pad(a)), call(url, tk, SEL.totalSupply), call(url, tk, SEL.decimals).catch(() => '0x12')]);
+        bal = BigInt(balHex); sup = BigInt(supHex); dec = parseInt(decHex, 16) || 18; unit = 'VAULT';
+        if (sup === 0n) throw new Error('totalSupply is 0');
+        pct = Number(bal * 100000000n / sup) / 1000000; holding = bal > 0n; pass = pct >= 0.001;
+      } else {                                            // wallet mode: native balance on Robinhood Chain
+        bal = BigInt(await rpc(url, 'eth_getBalance', [a, 'latest'])); dec = 18; unit = 'ETH'; sup = 0n;
+        holding = bal > 0n; pass = holding; pct = null;
+      }
+      setRow('hold', holding ? 'ok' : 'bad', holding ? fmtBig(bal, dec) + ' ' + unit : '0 ' + unit);
+      setRow('min', pass ? 'ok' : 'bad', pct === null ? (pass ? 'funded wallet' : 'empty wallet') : pct.toFixed(4) + '%');
       setRow('cluster', pass ? 'ok' : '', pass ? 'clear' : '—');        // v0.1: balance is the only gate
       setRow('activity', pass ? 'ok' : '', pass ? 'clear' : '—');
       const score = pass ? 100 : holding ? 40 : 0;
       const ring = $('#scoreRing'); ring.style.setProperty('--p', score); ring.style.setProperty('--ring', pass ? 'var(--lime)' : 'var(--red)');
       $('#scoreVal').textContent = score; $('#scoreVal').className = 'mono ' + (pass ? 'lime' : 'red');
-      title.textContent = pass ? 'Verified holder — eligible for epoch #01' : holding ? 'Not eligible — balance below 0.001% of supply' : 'Not eligible — no $VAULT in this wallet';
-      sub.textContent = 'Live balance · supply ' + fmtBig(sup, dec) + ' · ' + new URL(url).host;
+      title.textContent = pass ? 'Eligible' : 'Sybil';
+      title.className = 'v ' + (pass ? 'lime' : 'red');
+      sub.textContent = (pass ? 'Verified holder — eligible for epoch #01' : holding ? 'Balance below 0.001% of supply' : 'No balance on Robinhood Chain') + ' · live from ' + new URL(url).host;
     } catch (e) { title.textContent = 'RPC call failed'; sub.textContent = String(e.message || e).slice(0, 120); }
   }
   $('#checkBtn').addEventListener('click', checkAddress);
