@@ -35,11 +35,11 @@
   /* ---------- holder score: balance only ---------- */
   async function checkAddress() {
     const a = ($('#addrInput').value || '').trim(), url = rpcUrl(), tk = token();
-    const title = $('#scoreTitle'), sub = $('#scoreSub');
+    const title = $('#scoreTitle');
     const row = k => $('#criteria li[data-key=' + k + ']'); const setRow = (k, cls, v) => { const li = row(k); li.className = cls; $('.crit__val', li).textContent = v; };
-    if (!isAddr(a)) { title.textContent = 'Enter a valid 0x address'; sub.textContent = '40 hex characters after 0x.'; return; }
-    if (!url) { title.textContent = 'RPC not configured'; sub.textContent = 'Set CONFIG.RPC in chain.js.'; return; }
-    title.textContent = 'Checking on-chain…'; sub.textContent = new URL(url).host;
+    if (!isAddr(a)) { title.textContent = 'Enter a valid 0x address'; title.className = 'v'; return; }
+    if (!url) { title.textContent = 'RPC not configured'; title.className = 'v'; return; }
+    title.textContent = 'Checking on-chain…'; title.className = 'v';
     try {
       let bal, sup, dec, pct, holding, pass, unit;
       if (isAddr(tk)) {                                   // token mode: $VAULT balance vs supply
@@ -60,8 +60,7 @@
       $('#scoreVal').textContent = score; $('#scoreVal').className = 'mono ' + (pass ? 'lime' : 'red');
       title.textContent = pass ? 'Eligible' : 'Sybil';
       title.className = 'v ' + (pass ? 'lime' : 'red');
-      sub.textContent = (pass ? 'Verified holder — eligible for epoch #01' : holding ? 'Balance below 0.001% of supply' : 'No balance on Robinhood Chain') + ' · live from ' + new URL(url).host;
-    } catch (e) { title.textContent = 'RPC call failed'; sub.textContent = String(e.message || e).slice(0, 120); }
+    } catch (e) { title.textContent = 'RPC call failed'; title.className = 'v red'; console.warn(e); }
   }
   $('#checkBtn').addEventListener('click', checkAddress);
   $('#addrInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkAddress(); });
