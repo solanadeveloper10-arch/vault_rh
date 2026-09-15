@@ -54,5 +54,5 @@ mx, my, ms = 205, 250, 150
 ax.add_patch(FancyBboxPatch((mx - ms / 2, my - ms / 2), ms, ms, boxstyle="round,pad=0,rounding_size=34", fc=LIME, ec="none", zorder=5))
 keyhole(ax, mx, my, ms * 0.62, z=6)
 ax.text(mx + ms / 2 + 42, my - 6, "Vault", fontproperties=serif, fontsize=150, color=CREAM, va="center", ha="left", zorder=6)
-ax.text(mx - ms / 2, my - ms / 2 - 40, "Trade fees → Hyperliquid vault → USDC for loyal holders", fontsize=17, color="#8FA88F", family=["Menlo", "DejaVu Sans Mono"], va="top", zorder=6)
+ax.text(mx - ms / 2, my - ms / 2 - 40, "Trade fees → Hyperliquid vault → USDC for the loyal", fontsize=17, color="#8FA88F", family=["Menlo", "DejaVu Sans Mono"], va="top", zorder=6)
 f.savefig(os.path.join(ROOT, "banner-1500x500.png"), dpi=100); plt.close(f); print("banner-1500x500.png")

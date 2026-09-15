@@ -154,7 +154,7 @@ Principal never leaves the vault. Only the yield is paid.
 Launched Sep 15. First snapshot Sep 22.
 Hold through the week, check your status on the site, get paid Monday.
 
-Trade fees → Hyperliquid vault → USDC for loyal holders.
+Trade fees → Hyperliquid vault → USDC for the loyal.
 [site link]
 
 ---
@@ -277,7 +277,7 @@ $VAULT is live.
 Day 0. Counter starts now.
 
 **B · one-liner**
-Trade fees → Hyperliquid vault → USDC for loyal holders.
+Trade fees → Hyperliquid vault → USDC for the loyal.
 That’s the whole pitch.
 
 **C · live numbers (post daily, fill from the site)**
@@ -322,7 +322,7 @@ Nothing to do. Just don’t sell.
 ## Bio / listing descriptions
 
 **Bio**
-Trade fees → Hyperliquid vault → USDC for loyal holders. Paid every Monday. Hold longer, earn more.
+Trade fees → Hyperliquid vault → USDC for the loyal. Paid every Monday. Hold longer, earn more.
 
 **Listing**
 $VAULT on Robinhood Chain. 100% of the 1.5% trade fee is deposited into the top-APR Hyperliquid vault, auto-rotated weekly. Yield is paid in USDC every 7 days to wallets holding the token, weighted by days held (×2 at day 7, capped there). Team: 0% supply, 1% of yield.

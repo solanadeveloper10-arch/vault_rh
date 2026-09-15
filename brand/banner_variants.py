@@ -29,7 +29,7 @@ def save(f, name): f.savefig(os.path.join(ROOT, name), dpi=100); plt.close(f); p
 # ---- 1. classic: serif wordmark, tagline under, right-aligned ----
 f, ax = canvas((0x0A, 0x12, 0x0C), (0x16, 0x2E, 0x1B))
 ax.text(1380, 262, "Vault", fontproperties=serif, fontsize=190, color=CREAM, ha="right", va="center", zorder=3)
-ax.text(1380, 148, "Trade fees → Hyperliquid vault → USDC for loyal holders", fontsize=19, color=MUTED, family=MONO, ha="right", va="center", zorder=3)
+ax.text(1380, 148, "Trade fees → Hyperliquid vault → USDC for the loyal", fontsize=19, color=MUTED, family=MONO, ha="right", va="center", zorder=3)
 save(f, "banner-classic.png")
 
 # ---- 2. professional: restrained, structured, with a rule and meta line ----
@@ -38,7 +38,7 @@ f, ax = canvas((0x09, 0x10, 0x0B), (0x12, 0x24, 0x17), glow_x=0.88, glow_w=0.06,
 for yy in (110, 250, 390): ax.plot([80, 1420], [yy, yy], color=CREAM, alpha=0.05, lw=1, zorder=1)
 ax.text(1380, 300, "Vault", fontproperties=serif, fontsize=132, color=CREAM, ha="right", va="baseline", zorder=3)
 ax.plot([1010, 1380], [268, 268], color=LIME, lw=2, zorder=3)
-ax.text(1380, 222, "Trade fees → Hyperliquid vault → USDC for loyal holders", fontsize=18, color=CREAM, family=SANS, ha="right", va="center", zorder=3, alpha=0.9)
+ax.text(1380, 222, "Trade fees → Hyperliquid vault → USDC for the loyal", fontsize=18, color=CREAM, family=SANS, ha="right", va="center", zorder=3, alpha=0.9)
 ax.text(1380, 182, "ROBINHOOD CHAIN  ·  HYPEREVM TREASURY  ·  PAID MONTHLY  ·  VERIFIED HOLDERS ONLY", fontsize=12.5, color=MUTED, family=MONO, ha="right", va="center", zorder=3)
 ax.text(80, 60, "$VAULT", fontsize=13, color=LIME, family=MONO, ha="left", va="center", zorder=3)
 save(f, "banner-professional.png")
