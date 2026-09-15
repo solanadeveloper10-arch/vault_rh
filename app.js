@@ -169,7 +169,7 @@
 
   /* ---------- simple calculator ---------- */
   let lastPool = 0;
-  const SUPPLY = 1e9, ELIGIBLE = 0.42, TEAM_CUT = 0.01, AVG_MULT = 2; // team: 1% of yield after each epoch
+  const ELIGIBLE = 0.42, TEAM_CUT = 0.01, AVG_MULT = 2; // team: 1% of yield after each epoch
   // progressive by day, capped at ×2 once a full 7-day epoch is held
   const holdMult = d => d <= 0 ? 0 : Math.min(2, +(d * 2 / 7).toFixed(2));
   window.holdMult = holdMult;
@@ -187,6 +187,7 @@
     const team = yieldM * TEAM_CUT;
     const pool = yieldM - team;                                // distributed to verified holders
     const mult = holdMult(days);
+    const SUPPLY = window.SUPPLY || 1e9;                     // live totalSupply once chain.js has read it
     const pctSupply = tokens / SUPPLY;                       // your % of total supply
     const share = Math.min(1, pctSupply * mult / (ELIGIBLE * AVG_MULT)); // weighted against every eligible holder
     const month = pool * share;

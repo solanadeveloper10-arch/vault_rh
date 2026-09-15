@@ -7,14 +7,29 @@
   const TRANSFER = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
   const SEL = { balanceOf: '0x70a08231', totalSupply: '0x18160ddd', decimals: '0x313ce567' };
   const ZERO = '0x0000000000000000000000000000000000000000';
-  /* ===== CONFIG — fill these in; no UI on the site ===== */
+  /* ══════════════════════════════════════════════════════════════════════
+     CONFIG — the only block you edit when the token changes.
+     Full instructions: see CONFIG.md in the repo root.
+
+       RPC         JSON-RPC endpoint of the chain the token lives on.
+       TOKEN       ERC-20 contract address. Drives three things:
+                     1. the Holder score check  (balanceOf → Eligible / Sybil)
+                     2. "% of total supply" in the payout calculator (totalSupply)
+                     3. the holder scan         (Transfer logs → scanned/verified/excluded)
+                   Leave '' before launch: the check falls back to the native balance.
+       FEE_WALLET  Wallet that collects the trade fee. Shown on the site as TREASURY
+                   and used as the principal in the payout calculator.
+       SCAN_BLOCKS How far back the holder scan reads Transfer logs, in blocks.
+       FROM_BLOCK  Token deploy block. Set it for a full-history scan; null = SCAN_BLOCKS window.
+     ══════════════════════════════════════════════════════════════════════ */
   const CONFIG = {
-    RPC: 'https://rpc.mainnet.chain.robinhood.com',   // Robinhood Chain mainnet (chain id 4663)
-    TOKEN: '',                                 // $VAULT ERC-20 contract address (empty = check native ETH balance on Robinhood Chain)
+    RPC: 'https://rpc.mainnet.chain.robinhood.com',          // Robinhood Chain mainnet, chain id 4663
+    TOKEN: '0x39dbed3a2bd333467115de45665cc57f813c4571',     // ← SWAP THIS for the $VAULT contract
     FEE_WALLET: '0x70443320640bC8A2450F5c70dEea9d707dB1AedE', // vault wallet → shown as TREASURY
-    ETH_PRICE_FALLBACK: 4200,                  // used only if the price feed is unreachable
-    TREASURY_FLOOR: 6200,                      // keeps the calculator meaningful before fees accrue
-    FROM_BLOCK: null,                          // token deploy block (null = last 200k blocks)
+    SCAN_BLOCKS: 60000,                                       // holder-scan window (~60k blocks)
+    FROM_BLOCK: null,                                         // deploy block, or null for the window above
+    ETH_PRICE_FALLBACK: 4200,                                 // used only if the price feed is unreachable
+    TREASURY_FLOOR: 6200,                                     // keeps the calculator meaningful before fees accrue
   };
   const isAddr = a => /^0x[0-9a-fA-F]{40}$/.test(a || '');
   const pad = a => a.toLowerCase().replace('0x', '').padStart(64, '0');
@@ -22,14 +37,37 @@
   const fmtBig = (v, dec) => { const s = v.toString().padStart(dec + 1, '0'); const i = s.slice(0, -dec) || '0', f = s.slice(-dec).slice(0, 2); return Number(i).toLocaleString('en-US') + (dec ? '.' + f : ''); };
 
   let id = 0;
-  async function rpc(url, method, params) {
-    const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: ++id, method, params }) });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json(); if (j.error) throw new Error(j.error.message || 'RPC error'); return j.result;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // The public Robinhood RPC occasionally answers with a duplicated
+  // Access-Control-Allow-Origin header, which the browser rejects. It is per-request,
+  // so a couple of retries clear it. A dedicated RPC endpoint removes the need entirely.
+  async function rpc(url, method, params, tries = 3) {
+    let last;
+    for (let i = 0; i < tries; i++) {
+      try {
+        const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: ++id, method, params }) });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        if (j.error) throw new Error(j.error.message || 'RPC error');
+        return j.result;
+      } catch (e) { last = e; if (i < tries - 1) await sleep(250 * (i + 1)); }
+    }
+    throw last;
   }
   const call = (url, to, data) => rpc(url, 'eth_call', [{ to, data }, 'latest']);
 
   const rpcUrl = () => CONFIG.RPC, token = () => CONFIG.TOKEN;
+
+  /* ---------- token metadata: feeds "% of total supply" in the calculator ---------- */
+  async function loadToken() {
+    const url = rpcUrl(), tk = token();
+    if (!isAddr(tk) || !url) return;
+    try {
+      const [supHex, decHex] = await Promise.all([call(url, tk, SEL.totalSupply), call(url, tk, SEL.decimals).catch(() => '0x12')]);
+      const dec = parseInt(decHex, 16) || 18, sup = Number(BigInt(supHex) / (10n ** BigInt(Math.max(0, dec - 6)))) / 1e6;
+      if (sup > 0) { window.SUPPLY = sup; if (window.calc) window.calc(); }
+    } catch (e) { console.warn('token metadata failed', e); }
+  }
   function status(t, cls) { const el = $('#scanMeta'); if (el) { el.textContent = '· ' + t; el.className = 'muted ' + (cls || ''); } }
 
   /* ---------- holder score: balance only ---------- */
@@ -72,8 +110,8 @@
     try {
       const latest = parseInt(await rpc(url, 'eth_blockNumber'), 16);
       const fbIn = CONFIG.FROM_BLOCK;
-      let from = Number.isFinite(fbIn) ? fbIn : Math.max(0, latest - 200000);
-      let chunk = 2000; const balances = new Map(); const received = new Set(); let logsTotal = 0;
+      let from = Number.isFinite(fbIn) ? fbIn : Math.max(0, latest - (CONFIG.SCAN_BLOCKS || 60000));
+      let chunk = 20000; const balances = new Map(); const received = new Set(); let logsTotal = 0;
       while (from <= latest) {
         const to = Math.min(latest, from + chunk - 1);
         status(`scanning blocks ${from.toLocaleString()} → ${to.toLocaleString()} of ${latest.toLocaleString()} · ${received.size} wallets`, '');
@@ -87,7 +125,7 @@
           if (t !== ZERO) { balances.set(t, (balances.get(t) || 0n) + v); received.add(t); }
         }
         logsTotal += logs.length; from = to + 1;
-        if (logs.length < 500 && chunk < 20000) chunk *= 2;         // speed up on sparse ranges
+        if (logs.length < 5000 && chunk < 40000) chunk *= 2;         // speed up on sparse ranges
       }
       received.delete(tk.toLowerCase());
       let verified = 0; received.forEach(a => { if ((balances.get(a) || 0n) > 0n) verified++; });
@@ -141,5 +179,5 @@
   }
   // auto-start: price first, then the wallet, refreshed every 30s
   if (isAddr(CONFIG.FEE_WALLET)) loadEthPrice().then(readTreasury).then(ok => { if (ok) trackTimer = setInterval(readTreasury, 30000); });
-  if (isAddr(CONFIG.TOKEN)) scan();
+  if (isAddr(CONFIG.TOKEN)) { loadToken(); scan(); }
 })();
