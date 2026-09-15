@@ -127,7 +127,7 @@
       <div class="flow__step">
         <div class="flow__num mono">04</div>
         <h3>Sybil shield</h3>
-        <p>Only wallets that pass the holder-score check receive a share. Farms and clusters are excluded.</p>
+        <p>Only wallets still holding $VAULT receive a share. Buy once, sell out, and you get nothing.</p>
         <div class="flow__pill mono">→ bigger slice for you</div>
       </div>
     </div>
@@ -215,7 +215,7 @@
             <button type="button" data-v="1">1</button>
             <button type="button" data-v="3">3</button>
             <button type="button" data-v="5">5</button>
-            <button type="button" data-v="7">7+</button>
+            <button type="button" data-v="7">7</button>
           </div>
         </div>
         <div class="scalc__vault">
@@ -236,7 +236,7 @@
           <li><span>Your share of eligible supply</span><span class="mono" id="bShare">0%</span></li>
           <li><span>Hold multiplier</span><span class="mono" id="bMult">×2 <span class="muted" id="bMultNote">· 7 days held</span></span></li>
         </ul>
-        <p class="fine">payout = treasury × vault APR ÷ 52 × 99% × (your % of supply × your multiplier ÷ eligible supply × avg multiplier). Eligible supply after the holder check = 42%, avg multiplier ×2, team takes 1% of the yield after each epoch. Vault returns vary and can be negative. Vault returns vary and can be negative.</p>
+        <p class="fine">Your payout is this week's vault yield, minus the 1% team share, split by balance × days held across every verified wallet. The eligible share of supply and the average multiplier are read from the live holder scan. Vault returns vary and can be negative.</p>
       </div>
     </div>
   </div>
@@ -268,7 +268,6 @@
         <div class="panel rules">
           <div class="panel__title">Rules</div>
           <ul>
-            <li><b>Pro-rata</b> – share = your eligible balance ÷ total eligible balance.</li>
             <li><b>Days held = multiplier</b> – grows every single day: 0 days ×0, day 1 ×0.29, day 4 ×1.14, day 7 ×2. Seven days is the cap.</li>
             <li><b>Share</b> – your balance × your multiplier ÷ the sum of everyone's. A 7-day holder earns 7× what a 1-day holder earns per token.</li>
             <li><b>Paid in USDC</b> – every Monday, directly to your wallet, no claim needed.</li>
@@ -316,12 +315,11 @@
       </div>
 
       <div class="panel cluster">
-        <div class="panel__title">Cluster detection <span class="muted" id="scanMeta">· last snapshot</span></div>
+        <div class="panel__title">Holder distribution <span class="muted" id="scanMeta">· last snapshot</span></div>
         <svg class="cluster__svg" id="clusterSvg" viewBox="0 0 520 300" aria-label="Wallet cluster graph"></svg>
         <div class="cluster__legend">
-          <span><i class="sw sw--lime"></i>Verified holder</span>
-          <span><i class="sw sw--red"></i>Flagged sybil cluster</span>
-          <span><i class="sw sw--grey"></i>Pending</span>
+          <span><i class="sw sw--lime"></i>Verified · still holding</span>
+          <span><i class="sw sw--red"></i>Excluded · sold out</span>
         </div>
         <div class="cluster__stats">
           <div><span class="k">Wallets scanned</span><span class="v mono" id="wScanned">–</span></div>
@@ -382,11 +380,11 @@
         <div class="tok__legend" id="feeLegend"></div>
       </div>
       <div class="tok__facts">
-        <div class="fact panel"><span class="k">Total supply</span><span class="v mono">1,000,000,000</span></div>
+        <div class="fact panel"><span class="k">Total supply</span><span class="v mono" id="tokenSupply">–</span></div>
         <div class="fact panel"><span class="k">Ticker</span><span class="v mono">$VAULT</span></div>
         <div class="fact panel"><span class="k">Token chain</span><span class="v">Robinhood Chain</span></div>
         <div class="fact panel"><span class="k">Team</span><span class="v mono">0% supply · 1% of epoch yield</span></div>
-        <div class="fact panel"><span class="k">Treasury chain</span><span class="v">HyperEVM · 3/5 multisig</span></div>
+        <div class="fact panel"><span class="k">Treasury chain</span><span class="v">HyperEVM</span></div>
         <div class="fact panel"><span class="k">Vault rotation</span><span class="v">Automatic, weekly</span></div>
       </div>
     </div>

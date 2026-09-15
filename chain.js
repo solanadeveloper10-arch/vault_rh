@@ -20,18 +20,26 @@
        FEE_WALLET  Wallet that collects the trade fee. Its native balance is valued at the
                    live ETH price and shown as TREASURY in USDC equivalent; it is also the
                    principal in the payout calculator.
+       VAULT       Hyperliquid vault address holding the treasury. Its real name, APR and
+                   TVL are read from the Hyperliquid API and drive the payout calculator.
        MIN_USD     A wallet holding less than this in USD counts as sold out (dust).
                    Price comes from DexScreener; with no price feed the rule falls back
                    to "any non-zero balance".
-       SCAN_BLOCKS How far back the holder scan reads Transfer logs, in blocks.
-       FROM_BLOCK  Token deploy block. Set it for a full-history scan; null = SCAN_BLOCKS window.
+       SCAN_DAYS   How far back the holder scan tries to read Transfer logs. Robinhood Chain
+                   produces a block every ~0.1s, so a day is ~840k blocks; the scan converts
+                   days to blocks from the measured block time.
+       MAX_RANGES  Hard cap on eth_getLogs requests. If SCAN_DAYS needs more, the window is
+                   shortened and the panel reports the period actually covered.
+       FROM_BLOCK  Token deploy block. Set it at launch for a true full-history scan.
      ══════════════════════════════════════════════════════════════════════ */
   const CONFIG = {
     RPC: 'https://rpc.mainnet.chain.robinhood.com',          // Robinhood Chain mainnet, chain id 4663
     TOKEN: '0x39dbed3a2bd333467115de45665cc57f813c4571',     // ← SWAP THIS for the $VAULT contract
     FEE_WALLET: '0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB', // vault wallet → shown as TREASURY
+    VAULT: '0xdfc24b077bc1425ad1dea75bcb6f8158e10df303',       // ← Hyperliquid vault holding the treasury
     MIN_USD: 1,                                               // dust cutoff: below this a wallet counts as sold out
-    SCAN_BLOCKS: 60000,                                       // holder-scan window (~60k blocks)
+    SCAN_DAYS: 7,                                             // holder-scan window it aims for
+    MAX_RANGES: 12,                                           // cap on eth_getLogs requests per scan
     FROM_BLOCK: null,                                         // deploy block, or null for the window above
     ETH_PRICE_FALLBACK: 4200,                                 // used only if the price feed is unreachable
     TREASURY_FLOOR: 0,                                        // no placeholder: the treasury is whatever the wallet holds
@@ -89,13 +97,23 @@
     return out;
   }
 
-  // Reads balances for a list of wallets: Multicall3 first, JSON-RPC batch as a fallback.
-  async function readBalances(url, token, wallets) {
+  /* Reads balances for a list of wallets. Multicall3 first; on failure the group is split
+     and retried, then the JSON-RPC batch is tried. It throws rather than returning zeros:
+     a failed read must never be mistaken for "this wallet sold everything". */
+  async function readBalances(url, token, wallets, depth = 0) {
     try {
       const hex = await call(url, MULTICALL3, encodeAggregate3(token, wallets));
       const out = decodeAggregate3(hex, wallets.length);
       if (out.length === wallets.length) return out;
     } catch (e) { /* fall through */ }
+    if (wallets.length > 40 && depth < 3) {
+      const mid = Math.ceil(wallets.length / 2);
+      const [l, r] = await Promise.all([
+        readBalances(url, token, wallets.slice(0, mid), depth + 1),
+        readBalances(url, token, wallets.slice(mid), depth + 1),
+      ]);
+      return l.concat(r);
+    }
     const res = await batchCall(url, token, wallets.map(a => SEL.balanceOf + pad(a)));
     return res.map(h => BigInt(h || '0x0'));
   }
@@ -120,6 +138,22 @@
 
   const rpcUrl = () => CONFIG.RPC, token = () => CONFIG.TOKEN;
 
+  /* ---------- active vault: real name, APR and TVL from Hyperliquid ---------- */
+  async function loadVault() {
+    if (!isAddr(CONFIG.VAULT)) return;
+    try {
+      const d = await fetch('https://api.hyperliquid.xyz/info', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ type: 'vaultDetails', vaultAddress: CONFIG.VAULT.toLowerCase() }),
+      }).then(r => r.json());
+      if (!d || !d.name) return;
+      const days = d.portfolio ? null : null;
+      const info = { name: d.name, apr: Number(d.apr) * 100, tvl: Number(d.maxDistributable) || 0, leader: d.leader || CONFIG.VAULT };
+      window.VAULT_INFO = info;
+      if (window.setVault) window.setVault(info);
+    } catch (e) { console.warn('vault details unavailable, keeping the snapshot row', e); }
+  }
+
   /* ---------- token metadata + price ----------
      Supply feeds "% of total supply" in the calculator.
      Price turns the MIN_USD dust cutoff into a token amount, so "verified" means
@@ -132,7 +166,7 @@
     try {
       const j = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + tk).then(r => r.json());
       const pairs = (j.pairs || []).filter(p => p.priceUsd).sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
-      const p = parseFloat(pairs[0]?.priceUsd); if (p > 0) tokenPrice = p;
+      const p = parseFloat(pairs[0]?.priceUsd); if (p > 0) { tokenPrice = p; window.TOKEN_PRICE = p; if (window.buildTicker) window.buildTicker(); }
     } catch (e) { console.warn('price feed unavailable, falling back to non-zero balance', e); }
     return tokenPrice;
   }
@@ -145,7 +179,13 @@
       const [supHex, decHex] = await Promise.all([call(url, tk, SEL.totalSupply), call(url, tk, SEL.decimals).catch(() => '0x12')]);
       tokenDec = parseInt(decHex, 16) || 18;
       const sup = toNum(BigInt(supHex), tokenDec);
-      if (sup > 0) { window.SUPPLY = sup; if (window.calc) window.calc(); }
+      if (sup > 0) {
+        window.SUPPLY = sup;
+        const el = document.getElementById('tokenSupply');
+        if (el) el.textContent = Math.round(sup).toLocaleString('en-US');
+        if (window.calc) window.calc();
+        if (window.buildTicker) window.buildTicker();
+      }
     } catch (e) { console.warn('token metadata failed', e); }
   }
   function status(t, cls) { const el = $('#scanMeta'); if (el) { el.textContent = '· ' + t; el.className = 'muted ' + (cls || ''); } }
@@ -181,7 +221,7 @@
   $('#addrInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkAddress(); });
 
   /* ---------- holder scan: Transfer events + real balances ---------- */
-  let scanning = false;
+  let scanning = false, scanTries = 0;
   const CACHE_KEY = 'vault.scan.' + (CONFIG.TOKEN || '').toLowerCase();
 
   function paintScan(d, cached) {
@@ -192,14 +232,20 @@
     const ev = $('#epochVerified'); if (ev) ev.textContent = d.verified.toLocaleString();
     const es = $('#epochScanned'); if (es) es.textContent = d.scanned.toLocaleString();
     if (window.drawCluster) window.drawCluster(d.verified, excluded);
-    status(`${d.logs.toLocaleString()} transfers · ${d.host} · block ${d.block.toLocaleString()}`, '');
-    if (!cached) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch (e) { /* private mode */ } }
+    if (Number.isFinite(d.eligible) && d.eligible > 0) window.ELIGIBLE = d.eligible;
+    if (Number.isFinite(d.avgMult) && d.avgMult > 0) window.AVG_MULT = d.avgMult;
+    if (window.calc) window.calc();
+    if (window.buildTicker) window.buildTicker();
+    window.SCAN = d;
+    status(`last ${d.covered || '?'}${d.partial ? ' (partial)' : ''} · ${d.logs.toLocaleString()} transfers · ${d.host} · block ${d.block.toLocaleString()}`, '');
+    // only a complete scan is worth remembering; a partial one would freeze bad numbers
+    if (!cached && !d.partial) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch (e) { /* private mode */ } }
   }
 
   // show the last scan instantly, then refresh it in the background
   try {
     const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-    if (cached && cached.scanned) paintScan(cached, true);
+    if (cached && cached.scanned && cached.verified > 0) paintScan(cached, true);
   } catch (e) { /* ignore */ }
   async function scan() {
     if (scanning) return;
@@ -207,66 +253,113 @@
     if (!isAddr(tk) || !url) return;
     scanning = true;
     try {
-      const latest = parseInt(await rpc(url, 'eth_blockNumber'), 16);
-      const fbIn = CONFIG.FROM_BLOCK;
-      const from = Number.isFinite(fbIn) ? fbIn : Math.max(0, latest - (CONFIG.SCAN_BLOCKS || 60000));
+      const latest = parseInt(await rpc(url, 'eth_blockNumber', [], 8), 16);
 
-      /* 1. Every address that ever received the token = "scanned".
-            Ranges are fetched in parallel; a range that keeps failing is split in half. */
+      /* Robinhood Chain produces a block roughly every 0.1s, so "how many blocks back"
+         is meaningless on its own. Measure the block time, turn SCAN_DAYS into blocks,
+         then cap the request count and report the period actually covered. */
+      const blockTs = async b => parseInt((await rpc(url, 'eth_getBlockByNumber', [hex(b), false])).timestamp, 16);
+      const PROBE = 10000;
+      let secPerBlock = 0.1;
+      try {
+        const [tNow, tOld] = await Promise.all([blockTs(latest), blockTs(Math.max(1, latest - PROBE))]);
+        if (tNow > tOld) secPerBlock = (tNow - tOld) / PROBE;
+      } catch (e) { /* keep the default */ }
+      const blocksPerDay = Math.max(1, Math.round(86400 / secPerBlock));
+
       const SPAN = 20000, LOG_LANES = 4;
+      const maxBlocks = (CONFIG.MAX_RANGES || 40) * SPAN;
+      const wanted = Number.isFinite(CONFIG.FROM_BLOCK)
+        ? Math.max(0, latest - CONFIG.FROM_BLOCK)
+        : (CONFIG.SCAN_DAYS || 7) * blocksPerDay;
+      const blocks = Math.min(wanted, maxBlocks);
+      const from = Math.max(0, latest - blocks);
+      const coveredH = blocks * secPerBlock / 3600;
+      const covered = coveredH >= 48 ? (coveredH / 24).toFixed(1) + 'd'
+        : coveredH >= 1 ? coveredH.toFixed(1) + 'h'
+        : Math.round(coveredH * 60) + 'm';
+
+      /* 1. Every address that ever received the token in that window = "scanned".
+            Ranges are fetched in parallel; a range that keeps failing is split in half. */
       const ranges = [];
       for (let b0 = from; b0 <= latest; b0 += SPAN) ranges.push([b0, Math.min(latest, b0 + SPAN - 1)]);
       const getLogs = async (a0, b0, depth = 0) => {
         try {
-          return await rpc(url, 'eth_getLogs', [{ address: tk, fromBlock: hex(a0), toBlock: hex(b0), topics: [TRANSFER] }], 5);
+          return await rpc(url, 'eth_getLogs', [{ address: tk, fromBlock: hex(a0), toBlock: hex(b0), topics: [TRANSFER] }], 2);
         } catch (e) {
-          if (depth > 5 || b0 - a0 < 200) throw e;
+          if (depth >= 2 || b0 - a0 < 1000) throw e;
           const mid = Math.floor((a0 + b0) / 2);
           const [l, r] = await Promise.all([getLogs(a0, mid, depth + 1), getLogs(mid + 1, b0, depth + 1)]);
           return l.concat(r);
         }
       };
-      const received = new Set(); let logsTotal = 0, rangesDone = 0, nextRange = 0;
+      const received = new Set(), lastTouch = new Map();
+      let logsTotal = 0, rangesDone = 0, nextRange = 0, failed = 0;
       await Promise.all(Array.from({ length: Math.min(LOG_LANES, ranges.length) }, async () => {
         while (nextRange < ranges.length) {
           const [a0, b0] = ranges[nextRange++];
-          const logs = await getLogs(a0, b0);
+          // a range the RPC will not serve is skipped, not fatal: the scan reports partial coverage
+          let logs;
+          try { logs = await getLogs(a0, b0); }
+          catch (e) { failed++; rangesDone++; continue; }
           for (const l of logs) {
             if (l.topics.length < 3) continue;
-            const to = '0x' + l.topics[2].slice(26);
-            if (to !== ZERO) received.add(to);
+            const bn = parseInt(l.blockNumber, 16);
+            const f = '0x' + l.topics[1].slice(26), t2 = '0x' + l.topics[2].slice(26);
+            if (f !== ZERO) lastTouch.set(f, Math.max(lastTouch.get(f) || 0, bn));
+            if (t2 !== ZERO) { received.add(t2); lastTouch.set(t2, Math.max(lastTouch.get(t2) || 0, bn)); }
           }
           logsTotal += logs.length; rangesDone++;
-          status(`scanning blocks ${rangesDone}/${ranges.length} · ${received.size.toLocaleString()} wallets found`, '');
+          status(`scanning ${covered} of history · ${rangesDone}/${ranges.length} · ${received.size.toLocaleString()} wallets`, '');
         }
       }));
 
       received.delete(tk.toLowerCase());
       if (!tokenPrice) await loadPrice(tk);                       // price may not have landed yet
 
-      /* The log replay only knows the transfers inside the scanned window, so it cannot
-         be trusted as a balance. Read the real balanceOf for every candidate instead,
-         in JSON-RPC batches. verified = still holds ≥ MIN_USD worth,
-         excluded = sold out or left with dust below MIN_USD. */
+      /* 2. The log replay only knows the transfers inside the window, so it cannot be
+            trusted as a balance. Read the real balanceOf for every candidate through
+            Multicall3. verified = still holds >= MIN_USD worth; excluded = sold out or dust.
+            The same pass sums the verified balances, which gives the real eligible share
+            of supply instead of the 42% assumption. */
       const wallets = [...received];
-      let verified = 0, done = 0;
-      const GROUP = 250, LANES = 2;                               // ~11 multicalls, 2 in flight
+      let verified = 0, done = 0, unread = 0, eligibleRaw = 0n, weighted = 0, weightBase = 0;
+      const GROUP = 250, LANES = 2;
       const chunks = [];
       for (let i = 0; i < wallets.length; i += GROUP) chunks.push(wallets.slice(i, i + GROUP));
       let next = 0;
       await Promise.all(Array.from({ length: Math.min(LANES, chunks.length) }, async () => {
         while (next < chunks.length) {
-          const slice = chunks[next++];
-          const bals = await readBalances(url, tk, slice).catch(() => slice.map(() => 0n));
-          bals.forEach(b => { if (holdsEnough(b)) verified++; });
+          const idx = next++, slice = chunks[idx];
+          let bals = null;
+          try { bals = await readBalances(url, tk, slice); }
+          catch (e) { unread += slice.length; done += slice.length; continue; }
+          bals.forEach((b, j) => {
+            if (!holdsEnough(b)) return;
+            verified++; eligibleRaw += b;
+            const days = (latest - (lastTouch.get(slice[j]) || from)) / blocksPerDay;
+            const tokens = toNum(b, tokenDec);
+            weighted += tokens * Math.min(2, Math.max(0, days * 2 / 7));
+            weightBase += tokens;
+          });
           done += slice.length;
           status(`reading balances ${Math.min(done, wallets.length).toLocaleString()} / ${wallets.length.toLocaleString()} wallets`, '');
         }
       }));
-      const scanned = wallets.length;
-      paintScan({ scanned, verified, logs: logsTotal, block: latest, host: new URL(url).host, at: Date.now() });
+
+      // real eligible share of supply; the average multiplier needs a window of a full epoch
+      const eligibleTokens = toNum(eligibleRaw, tokenDec);
+      const eligible = window.SUPPLY > 0 ? eligibleTokens / window.SUPPLY : null;
+      const avgMult = coveredH >= 168 && weightBase > 0 ? weighted / weightBase : null;
+
+      const scanned = wallets.length - unread;    // wallets whose balance could not be read are left out
+      paintScan({ scanned, verified, logs: logsTotal, block: latest, host: new URL(url).host, covered, eligible, avgMult, partial: failed > 0 || unread > 0, at: Date.now() });
     } catch (e) {
-      status('scan failed: ' + String(e.message || e).slice(0, 100), 'red');
+      console.warn('scan failed, will retry', e);
+      status('rpc busy, retrying…', '');
+      scanning = false;
+      if (scanTries++ < 4) { await sleep(12000); return scan(); }
+      status('scan unavailable, the public RPC refused the request', 'red');
     } finally { scanning = false; }
   }
 
@@ -323,5 +416,6 @@
   // auto-start: price first, then the wallet, refreshed every 30s
   // always keep the 30s refresh running: a failed read just retries on the next tick
   if (isAddr(CONFIG.FEE_WALLET)) loadEthPrice().then(readTreasury).finally(() => { trackTimer = setInterval(readTreasury, 30000); });
+  loadVault();
   if (isAddr(CONFIG.TOKEN)) loadToken().then(scan);
 })();

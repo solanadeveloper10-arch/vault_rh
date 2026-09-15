@@ -9,7 +9,9 @@ const CONFIG = {
   RPC:         'https://rpc.mainnet.chain.robinhood.com',     // Robinhood Chain mainnet, chain id 4663
   TOKEN:       '0x39dbed3a2bd333467115de45665cc57f813c4571',  // ← the ERC-20 contract
   FEE_WALLET:  '0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB',  // ← wallet that collects the fee
-  SCAN_BLOCKS: 60000,                                         // holder-scan window
+  VAULT:       '0xdfc24b077bc1425ad1dea75bcb6f8158e10df303',  // ← Hyperliquid vault holding the treasury
+  SCAN_DAYS:   7,                                             // history the holder scan aims for
+  MAX_RANGES:  12,                                            // cap on eth_getLogs requests
   FROM_BLOCK:  null,                                          // deploy block for a full scan
 };
 ```
@@ -32,6 +34,7 @@ Nothing else needs editing. No build step, no dependencies.
 | `TOKEN` | "= X% of total supply" under the balance input | `eth_call` → `totalSupply()`, `decimals()` |
 | `TOKEN` | Cluster detection → wallets scanned / verified / excluded | `eth_getLogs` → `Transfer` events |
 | `FEE_WALLET` | TREASURY card in the hero, principal in the calculator | `eth_getBalance` |
+| `VAULT` | active vault name, APR and TVL in the terminal, table and calculator | Hyperliquid `vaultDetails` |
 | `RPC` | all of the above | – |
 
 ## How the numbers are derived
@@ -61,9 +64,11 @@ Refreshes every 30 seconds, is cached in `localStorage` so a reload paints insta
 and keeps retrying on the next tick when a read fails. `TREASURY_FLOOR` is 0, so the
 figure on the page is whatever the wallet actually holds – nothing is padded.
 
-**Payout.** `treasury × vault APR ÷ 52 × 99% × (your % of supply × multiplier ÷ 42% × 2)`.
-The 1% is the team share, 42% is the eligible share of supply after the holder check,
-and the multiplier runs from ×0 at day 0 to ×2 at day 7, capped there.
+**Payout.** The vault's gross yield for one epoch is `treasury × APR ÷ 52`. The vault
+operator's cut comes off first, then the 1% team share, and the rest is split by
+`balance × multiplier` across verified wallets. The eligible share of supply comes from
+the holder scan, not from an assumption. The multiplier runs from ×0 at day 0 to ×2 at
+day 7 and is capped there, restarting every epoch.
 
 ## Currently wired (live, verified)
 
