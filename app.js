@@ -1,4 +1,4 @@
-/* $VAULT prototype — all data is illustrative / simulated */
+/* $VAULT prototype – all data is illustrative / simulated */
 (function () {
   'use strict';
 
@@ -6,6 +6,8 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const fmtUSD = (n, d = 0) => '$' + Math.round(n).toLocaleString('en-US', { maximumFractionDigits: d });
+  // small balances keep their cents; anything four digits and up rounds to whole dollars
+  const usd = n => n >= 1000 ? fmtUSD(n) : '$' + n.toFixed(2);
   const fmtUSDc = (n) => n >= 1e6 ? '$' + (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? '$' + (n / 1e3).toFixed(1) + 'K' : '$' + n.toFixed(2);
   const fmtPct = (n, d = 2) => (n > 0 ? '+' : '') + n.toFixed(d) + '%';
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -139,9 +141,9 @@
     const why = {
       1: ['Protocol-run market making, deep liquidity', 'Lowest drawdown profile on Hyperliquid', 'Best fit for capital preservation'],
       2: ['Consistent 30d and 90d returns', 'Delta-neutral grid exposure, moderate drawdown', 'TVL large enough to absorb treasury deposits'],
-      3: ['Long the two strongest assets on Hyperliquid, short weak alts', 'Best 30d return among vaults inside policy', 'Directional exposure — higher variance, monitored monthly'],
+      3: ['Long the two strongest assets on Hyperliquid, short weak alts', 'Best 30d return among vaults inside policy', 'Directional exposure – higher variance, monitored monthly'],
       4: ['Very high APR with high leverage', 'Short track record; drawdowns > 30% observed', 'Community vote required before routing fees here'],
-      5: ['Highest 30d APR on Hyperliquid right now', 'Aggressive leveraged strategy — high variance, monitored daily', 'Re-evaluated at every weekly snapshot; rotates out if it drops from #1'],
+      5: ['Highest 30d APR on Hyperliquid right now', 'Aggressive leveraged strategy – high variance, monitored daily', 'Re-evaluated at every weekly snapshot; rotates out if it drops from #1'],
     }[v.risk];
     $('#vaultDetail').innerHTML = `
       <div class="panel vd">
@@ -173,8 +175,8 @@
   // progressive by day, capped at ×2 once a full 7-day epoch is held
   const holdMult = d => d <= 0 ? 0 : Math.min(2, +(d * 2 / 7).toFixed(2));
   window.holdMult = holdMult;
-  // live treasury (USD) — chain.js overwrites this from the vault wallet, then calls calc()
-  window.TREASURY = 6200;
+  // live treasury (USD) – chain.js overwrites this from the vault wallet, then calls calc()
+  window.TREASURY = 0;
 
   function calc() {
     const v = VAULTS.find(x => x.id === selectedId); const apr = aprFor(v) / 100;
@@ -196,12 +198,12 @@
     $('#rDay').textContent = '$' + (month / 7).toFixed(2);
     $('#bMult').firstChild.textContent = '×' + mult.toFixed(2) + ' ';
     $('#bMultNote').textContent = '· ' + days + (days === 1 ? ' day held' : ' days held') + (mult === 0 ? ' · hold at least 1 day' : mult === 2 ? ' · max' : '');
-    $('#calcTreasury').textContent = fmtUSD(treasury);
+    $('#calcTreasury').textContent = usd(treasury);
     $('#tokensPct').textContent = '= ' + (pctSupply * 100).toFixed(4).replace(/0+$/, '').replace(/\.$/, '') + '% of total supply';
-    $('#bYield').textContent = fmtUSD(yieldM); $('#bTeam').textContent = fmtUSD(team); $('#bPool').textContent = fmtUSD(pool);
+    $('#bYield').textContent = usd(yieldM); $('#bTeam').textContent = usd(team); $('#bPool').textContent = usd(pool);
     $('#bShare').textContent = (share * 100).toFixed(4).replace(/0+$/, '').replace(/\.$/, '') + '%';
-    $('#nextPool').textContent = fmtUSD(pool); lastPool = pool;
-    const ep = $('#epochPool'); if (ep) ep.textContent = '~' + fmtUSD(pool);
+    $('#nextPool').textContent = usd(pool); lastPool = pool;
+    const ep = $('#epochPool'); if (ep) ep.textContent = '~' + usd(pool);
     $$('.presets').forEach(p => { const val = +$('#' + p.dataset.for).value; $$('button', p).forEach(bt => bt.classList.toggle('is-on', +bt.dataset.v === val)); });
   }
   window.calc = calc;
@@ -210,15 +212,15 @@
   const EPOCHS = [
     ['#02', 'Sep 29 2026', 'plan', 0, 'Vault re-selected at the Sep 29 snapshot'],
     ['#01', 'Sep 22 2026', 'next', -1, 'BredoStrategy · first snapshot Sep 22 00:00 UTC · 7-day epoch'],
-    ['—', 'Sep 15 2026 · today', 'launch', 0, '$VAULT launched on Robinhood Chain · treasury bridged to HyperEVM'],
+    ['–', 'Sep 15 2026 · today', 'launch', 0, '$VAULT launched on Robinhood Chain · treasury bridged to HyperEVM'],
   ];
   function renderEpochs() {
     $('#epochs').innerHTML = EPOCHS.map(([n, d, st, pool, note]) => `
       <li><span class="ep">${n}</span>
         <span class="name">${d}<small>${note}</small></span>
         <span class="st st--${st}">${{ next: 'UPCOMING', plan: 'SCHEDULED', launch: 'LAUNCHED' }[st]}</span>
-        <span class="hold">${st === 'next' ? '1,204 verified' : st === 'launch' ? '2,870 wallets' : '—'}</span>
-        <span class="pool ${st === 'next' ? 'lime' : ''}">${pool < 0 ? '<span id="epochPool">—</span>' : '—'}</span></li>`).join('');
+        <span class="hold">${st === 'next' ? '<span id="epochVerified">–</span> verified' : st === 'launch' ? '<span id="epochScanned">–</span> wallets' : '–'}</span>
+        <span class="pool ${st === 'next' ? 'lime' : ''}">${pool < 0 ? '<span id="epochPool">–</span>' : '–'}</span></li>`).join('');
   }
 
   /* ---------- cluster graph (illustrative layout; counts come from the real scan when configured) ---------- */

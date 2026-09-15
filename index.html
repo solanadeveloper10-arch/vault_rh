@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault — trade fees become weekly USDC</title>
+  <title>Vault – trade fees become weekly USDC</title>
   <link rel="icon" href="logo-mark.svg" type="image/svg+xml">
   <meta name="description" content="Trading fees are routed into the most profitable Hyperliquid vault and the yield is paid every week in USDC to verified, non-sybil holders.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,7 +53,7 @@
       <p class="lede">
         Every trade of <b>$VAULT</b> on Robinhood Chain collects a 1.5% fee. All of it is bridged to
         HyperEVM and deposited into the most profitable vault on Hyperliquid. Every 7 days the yield
-        is paid out in USDC — only to real, verified holders. The longer you hold, the bigger your share.
+        is paid out in USDC – only to real, verified holders. The longer you hold, the bigger your share.
       </p>
       <div class="hero__cta">
         <a class="btn btn--ghost btn--lg" href="#how">How it works</a>
@@ -74,16 +74,16 @@
       </div>
       <div class="terminal__body">
         <div class="stat stat--big">
-          <span class="k" id="tTvlLabel">Treasury in vault · since launch today</span>
-          <span class="v mono" id="tTvl">$6,200</span>
-          <span class="delta up mono" id="tTvlDelta">+$6,200 (today)</span>
+          <span class="k" id="tTvlLabel">Treasury · live balance of the vault wallet, in USDC</span>
+          <span class="v mono" id="tTvl">–</span>
+          <span class="delta mono muted" id="tTvlDelta">reading the vault wallet…</span>
         </div>
         <canvas id="heroChart" class="terminal__chart" height="140"></canvas>
         <div class="terminal__grid">
           <div class="stat"><span class="k">Active vault</span><span class="v" id="tVault">BredoStrategy</span></div>
           <div class="stat"><span class="k">Vault APR (30d)</span><span class="v mono up" id="tApr">1045.63%</span></div>
           <div class="stat"><span class="k">Next payout in</span><span class="v mono" id="countdown">16d 08h 41m</span></div>
-          <div class="stat"><span class="k">Verified holders</span><span class="v mono" id="tHolders">— <span class="muted">/ run scan</span></span></div>
+          <div class="stat"><span class="k">Verified holders</span><span class="v mono" id="tHolders">– <span class="muted">/ run scan</span></span></div>
         </div>
         <div class="terminal__foot mono">
           <span>launched today · Sep 15</span><span>·</span><span>no payouts yet</span><span>·</span><span>first snapshot Sep 22</span>
@@ -102,7 +102,7 @@
 <section class="section" id="how">
   <div class="container">
     <div class="section__head">
-      <span class="label">01 — Mechanism</span>
+      <span class="label">01 – Mechanism</span>
       <h2>Fees in. Yield out. <em>Real holders only.</em></h2>
     </div>
     <div class="flow">
@@ -139,7 +139,7 @@
   <div class="container">
     <div class="section__head section__head--row">
       <div>
-        <span class="label">02 — Vault rotation</span>
+        <span class="label">02 – Vault rotation</span>
         <h2>The engine <em>picks itself.</em></h2>
         <p class="sub">Every week the treasury automatically rotates into the most profitable Hyperliquid vault that passes the risk policy. No voting, no manual choice.</p>
       </div>
@@ -178,7 +178,7 @@
 <section class="section section--alt" id="yield">
   <div class="container">
     <div class="section__head">
-      <span class="label">03 — Expected income</span>
+      <span class="label">03 – Expected income</span>
       <h2>How much do <em>you</em> get this week?</h2>
       <p class="sub">Treasury is read live from the vault wallet. Add your balance and your days held.</p>
     </div>
@@ -186,8 +186,8 @@
     <div class="scalc panel">
       <div class="scalc__inputs">
         <div class="scalc__treasury">
-          <span class="k">Money in the treasury <span class="muted">· live on-chain</span></span>
-          <span class="v mono lime" id="calcTreasury">—</span>
+          <span class="k">Money in the treasury <span class="muted">· live on-chain, in USDC</span></span>
+          <span class="v mono lime" id="calcTreasury">–</span>
           <span class="fine mono" id="calcTreasurySub">reading the vault wallet…</span>
         </div>
         <div class="field">
@@ -220,8 +220,8 @@
         </div>
         <div class="scalc__vault">
           <span class="k">Vault this week · auto-selected</span>
-          <span class="v" id="calcVaultName">—</span>
-          <span class="mono up" id="calcVaultApr">—</span>
+          <span class="v" id="calcVaultName">–</span>
+          <span class="mono up" id="calcVaultApr">–</span>
         </div>
       </div>
 
@@ -246,7 +246,7 @@
 <section class="section" id="distribution">
   <div class="container">
     <div class="section__head">
-      <span class="label">04 — Distribution</span>
+      <span class="label">04 – Distribution</span>
       <h2>One epoch. <em>Every 7 days.</em></h2>
     </div>
     <div class="dist">
@@ -268,13 +268,13 @@
         <div class="panel rules">
           <div class="panel__title">Rules</div>
           <ul>
-            <li><b>Pro-rata</b> — share = your eligible balance ÷ total eligible balance.</li>
-            <li><b>Days held = multiplier</b> — grows every single day: 0 days ×0, day 1 ×0.29, day 4 ×1.14, day 7 ×2. Seven days is the cap.</li>
-            <li><b>Share</b> — your balance × your multiplier ÷ the sum of everyone's. A 7-day holder earns 7× what a 1-day holder earns per token.</li>
-            <li><b>Paid in USDC</b> — every Monday, directly to your wallet, no claim needed.</li>
-            <li><b>Principal stays</b> — only vault yield is distributed; the treasury keeps compounding.</li>
-            <li><b>Team earns with you</b> — 1% of each epoch's yield, taken after the snapshot. 0% of trade fees, 0% of supply.</li>
-            <li><b>Auto-rotation</b> — on each snapshot the treasury moves to the best vault that passes policy.</li>
+            <li><b>Pro-rata</b> – share = your eligible balance ÷ total eligible balance.</li>
+            <li><b>Days held = multiplier</b> – grows every single day: 0 days ×0, day 1 ×0.29, day 4 ×1.14, day 7 ×2. Seven days is the cap.</li>
+            <li><b>Share</b> – your balance × your multiplier ÷ the sum of everyone's. A 7-day holder earns 7× what a 1-day holder earns per token.</li>
+            <li><b>Paid in USDC</b> – every Monday, directly to your wallet, no claim needed.</li>
+            <li><b>Principal stays</b> – only vault yield is distributed; the treasury keeps compounding.</li>
+            <li><b>Team earns with you</b> – 1% of each epoch's yield, taken after the snapshot. 0% of trade fees, 0% of supply.</li>
+            <li><b>Auto-rotation</b> – on each snapshot the treasury moves to the best vault that passes policy.</li>
           </ul>
         </div>
       </div>
@@ -286,7 +286,7 @@
 <section class="section section--alt" id="holders">
   <div class="container">
     <div class="section__head">
-      <span class="label">05 — Sybil shield</span>
+      <span class="label">05 – Sybil shield</span>
       <h2>Money goes to <em>enthusiasts</em>, not farms.</h2>
       <p class="sub">Verified holders are the wallets that actually hold the token right now. Everyone who bought once and sold out is excluded from the payout.</p>
     </div>
@@ -301,16 +301,16 @@
         <div class="checker__result" id="checkerResult">
           <div class="score">
             <div class="score__ring" id="scoreRing" style="--p:0">
-              <span class="mono" id="scoreVal">—</span>
+              <span class="mono" id="scoreVal">–</span>
             </div>
             <div class="score__text">
               <span class="v" id="scoreTitle">Enter an address</span>
             </div>
           </div>
           <ul class="criteria" id="criteria">
-            <li data-key="hold"><span class="crit__ico"></span><span>Holds $VAULT at the token contract</span><span class="mono crit__val">—</span></li>
-            <li data-key="cluster"><span class="crit__ico"></span><span>Not funded from a known cluster</span><span class="mono crit__val">—</span></li>
-            <li data-key="activity"><span class="crit__ico"></span><span>Organic on-chain activity</span><span class="mono crit__val">—</span></li>
+            <li data-key="hold"><span class="crit__ico"></span><span>Holds $VAULT at the token contract</span><span class="mono crit__val">–</span></li>
+            <li data-key="cluster"><span class="crit__ico"></span><span>Not funded from a known cluster</span><span class="mono crit__val">–</span></li>
+            <li data-key="activity"><span class="crit__ico"></span><span>Organic on-chain activity</span><span class="mono crit__val">–</span></li>
           </ul>
         </div>
       </div>
@@ -324,10 +324,10 @@
           <span><i class="sw sw--grey"></i>Pending</span>
         </div>
         <div class="cluster__stats">
-          <div><span class="k">Wallets scanned</span><span class="v mono" id="wScanned">—</span></div>
-          <div><span class="k">Verified</span><span class="v mono lime" id="wVerified">—</span></div>
-          <div><span class="k">Excluded</span><span class="v mono red" id="wExcluded">—</span></div>
-          <div><span class="k">Excluded %</span><span class="v mono" id="wExcludedPct">—</span></div>
+          <div><span class="k">Wallets scanned</span><span class="v mono" id="wScanned">–</span></div>
+          <div><span class="k">Verified</span><span class="v mono lime" id="wVerified">–</span></div>
+          <div><span class="k">Excluded</span><span class="v mono red" id="wExcluded">–</span></div>
+          <div><span class="k">Excluded %</span><span class="v mono" id="wExcludedPct">–</span></div>
         </div>
       </div>
     </div>
@@ -360,8 +360,8 @@
           </div>
           <canvas id="loyalChart" height="120"></canvas>
           <div class="loyal__out">
-            <div><span class="k">Your multiplier</span><span class="v mono lime" id="loyalKeep">—</span></div>
-            <div><span class="k">vs. a 7-day holder</span><span class="v mono" id="loyalStreak">—</span></div>
+            <div><span class="k">Your multiplier</span><span class="v mono lime" id="loyalKeep">–</span></div>
+            <div><span class="k">vs. a 7-day holder</span><span class="v mono" id="loyalStreak">–</span></div>
           </div>
         </div>
       </div>
@@ -373,7 +373,7 @@
 <section class="section" id="token">
   <div class="container">
     <div class="section__head">
-      <span class="label">06 — Token</span>
+      <span class="label">06 – Token</span>
       <h2>$VAULT <em>economics.</em></h2>
     </div>
     <div class="tok">

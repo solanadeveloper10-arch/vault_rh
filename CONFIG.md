@@ -8,7 +8,7 @@ card, the payout calculator and the holder scan.
 const CONFIG = {
   RPC:         'https://rpc.mainnet.chain.robinhood.com',     // Robinhood Chain mainnet, chain id 4663
   TOKEN:       '0x39dbed3a2bd333467115de45665cc57f813c4571',  // ← the ERC-20 contract
-  FEE_WALLET:  '0x70443320640bC8A2450F5c70dEea9d707dB1AedE',  // ← wallet that collects the fee
+  FEE_WALLET:  '0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB',  // ← wallet that collects the fee
   SCAN_BLOCKS: 60000,                                         // holder-scan window
   FROM_BLOCK:  null,                                          // deploy block for a full scan
 };
@@ -20,8 +20,7 @@ const CONFIG = {
 2. Put the deploy block number in `FROM_BLOCK` so the holder scan covers the full
    history instead of the last `SCAN_BLOCKS` blocks.
 3. Put the real fee wallet in `FEE_WALLET`.
-4. Drop `TREASURY_FLOOR` to `0` once fees actually accrue — until then it keeps the
-   calculator from showing zeros on an empty wallet.
+4. `TREASURY_FLOOR` stays `0` so the treasury is never padded with a placeholder.
 
 Nothing else needs editing. No build step, no dependencies.
 
@@ -33,7 +32,7 @@ Nothing else needs editing. No build step, no dependencies.
 | `TOKEN` | "= X% of total supply" under the balance input | `eth_call` → `totalSupply()`, `decimals()` |
 | `TOKEN` | Cluster detection → wallets scanned / verified / excluded | `eth_getLogs` → `Transfer` events |
 | `FEE_WALLET` | TREASURY card in the hero, principal in the calculator | `eth_getBalance` |
-| `RPC` | all of the above | — |
+| `RPC` | all of the above | – |
 
 ## How the numbers are derived
 
@@ -56,8 +55,11 @@ Log replay alone is not used as a balance: it only knows the transfers inside th
 scanned window. The result is cached in `localStorage`, so a repeat visit paints the
 last numbers instantly and refreshes them in the background.
 
-**Treasury.** Native balance of `FEE_WALLET`, converted with a live ETH price from
-Coinbase (falls back to `ETH_PRICE_FALLBACK`). Refreshes every 30 seconds.
+**Treasury.** Native ETH balance of `FEE_WALLET`, valued at the live ETH price from
+Coinbase and shown as its USDC equivalent (falls back to `ETH_PRICE_FALLBACK`).
+Refreshes every 30 seconds, is cached in `localStorage` so a reload paints instantly,
+and keeps retrying on the next tick when a read fails. `TREASURY_FLOOR` is 0, so the
+figure on the page is whatever the wallet actually holds – nothing is padded.
 
 **Payout.** `treasury × vault APR ÷ 52 × 99% × (your % of supply × multiplier ÷ 42% × 2)`.
 The 1% is the team share, 42% is the eligible share of supply after the holder check,
@@ -71,6 +73,7 @@ and the multiplier runs from ×0 at day 0 to ×2 at day 7, capped there.
 | Contract | `0x39dbed3a2bd333467115de45665cc57f813c4571` |
 | Token | Pons (PONS), 18 decimals, 1,000,000,000 supply |
 | Price feed | DexScreener, PONS/WETH on Uniswap v3 |
+| Treasury wallet | `0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB` → 0.008866 ETH ≈ $21 |
 | Example holder | `0x907d1d174569b11624bdcefd20dcef27600237f8` → ~54,000 PONS → **Eligible** |
 | Example sold out | `0x6e2a35a7ad683cf634d91492d73bb7ff774c6919` → 0 PONS → **Sybil** |
 | Last scan | 2,658 wallets ever received · 1,695 still hold ≥ $1 · 963 excluded (36.2%) |
@@ -82,7 +85,7 @@ Replace it with the $VAULT contract at launch.
 
 `rpc.mainnet.chain.robinhood.com` intermittently answers with a duplicated
 `Access-Control-Allow-Origin: *,*` header, which browsers reject. It is per-request,
-so `chain.js` retries every call up to three times and the data loads anyway — the
+so `chain.js` retries every call up to three times and the data loads anyway – the
 failed attempts still show up in the browser console as CORS errors.
 
 A dedicated endpoint (QuickNode, Dwellir, ArrowRPC all publish Robinhood Chain nodes)

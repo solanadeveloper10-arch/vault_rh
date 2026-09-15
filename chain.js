@@ -8,7 +8,7 @@
   const SEL = { balanceOf: '0x70a08231', totalSupply: '0x18160ddd', decimals: '0x313ce567' };
   const ZERO = '0x0000000000000000000000000000000000000000';
   /* ══════════════════════════════════════════════════════════════════════
-     CONFIG — the only block you edit when the token changes.
+     CONFIG – the only block you edit when the token changes.
      Full instructions: see CONFIG.md in the repo root.
 
        RPC         JSON-RPC endpoint of the chain the token lives on.
@@ -17,8 +17,9 @@
                      2. "% of total supply" in the payout calculator (totalSupply)
                      3. the holder scan         (Transfer logs → scanned/verified/excluded)
                    Leave '' before launch: the check falls back to the native balance.
-       FEE_WALLET  Wallet that collects the trade fee. Shown on the site as TREASURY
-                   and used as the principal in the payout calculator.
+       FEE_WALLET  Wallet that collects the trade fee. Its native balance is valued at the
+                   live ETH price and shown as TREASURY in USDC equivalent; it is also the
+                   principal in the payout calculator.
        MIN_USD     A wallet holding less than this in USD counts as sold out (dust).
                    Price comes from DexScreener; with no price feed the rule falls back
                    to "any non-zero balance".
@@ -28,12 +29,12 @@
   const CONFIG = {
     RPC: 'https://rpc.mainnet.chain.robinhood.com',          // Robinhood Chain mainnet, chain id 4663
     TOKEN: '0x39dbed3a2bd333467115de45665cc57f813c4571',     // ← SWAP THIS for the $VAULT contract
-    FEE_WALLET: '0x70443320640bC8A2450F5c70dEea9d707dB1AedE', // vault wallet → shown as TREASURY
+    FEE_WALLET: '0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB', // vault wallet → shown as TREASURY
     MIN_USD: 1,                                               // dust cutoff: below this a wallet counts as sold out
     SCAN_BLOCKS: 60000,                                       // holder-scan window (~60k blocks)
     FROM_BLOCK: null,                                         // deploy block, or null for the window above
     ETH_PRICE_FALLBACK: 4200,                                 // used only if the price feed is unreachable
-    TREASURY_FLOOR: 6200,                                     // keeps the calculator meaningful before fees accrue
+    TREASURY_FLOOR: 0,                                        // no placeholder: the treasury is whatever the wallet holds
   };
   const isAddr = a => /^0x[0-9a-fA-F]{40}$/.test(a || '');
   const pad = a => a.toLowerCase().replace('0x', '').padStart(64, '0');
@@ -60,7 +61,7 @@
   }
   const call = (url, to, data) => rpc(url, 'eth_call', [{ to, data }, 'latest']);
 
-  /* Multicall3 — canonical address, deployed on Robinhood Chain. Lets one eth_call
+  /* Multicall3 – canonical address, deployed on Robinhood Chain. Lets one eth_call
      return hundreds of balanceOf results, which keeps the public RPC's rate limit happy. */
   const MULTICALL3 = '0xcA11bde05977b3631167028862bE2a173976CA11';
   const w32 = n => n.toString(16).padStart(64, '0');
@@ -188,6 +189,8 @@
     $('#wScanned').textContent = d.scanned.toLocaleString(); $('#wVerified').textContent = d.verified.toLocaleString();
     $('#wExcluded').textContent = excluded.toLocaleString(); $('#wExcludedPct').textContent = pct.toFixed(1) + '%';
     const th = $('#tHolders'); if (th) th.innerHTML = `${d.verified.toLocaleString()} <span class="muted">/ ${d.scanned.toLocaleString()}</span>`;
+    const ev = $('#epochVerified'); if (ev) ev.textContent = d.verified.toLocaleString();
+    const es = $('#epochScanned'); if (es) es.textContent = d.scanned.toLocaleString();
     if (window.drawCluster) window.drawCluster(d.verified, excluded);
     status(`${d.logs.toLocaleString()} transfers · ${d.host} · block ${d.block.toLocaleString()}`, '');
     if (!cached) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch (e) { /* private mode */ } }
@@ -269,6 +272,27 @@
 
   /* ---------- treasury: live balance of the vault wallet ---------- */
   let trackTimer = null, ethPrice = CONFIG.ETH_PRICE_FALLBACK;
+  const TRE_KEY = 'vault.treasury.' + (CONFIG.FEE_WALLET || '').toLowerCase();
+
+  function paintTreasury(d, cached) {
+    window.TREASURY = d.usd;                                   // feeds the payout calculator
+    const shown = d.usd >= 1000 ? Math.round(d.usd).toLocaleString('en-US') : d.usd.toFixed(2);
+    const short = d.w.slice(0, 6) + '…' + d.w.slice(-4);
+    $('#tTvl').textContent = '$' + shown;
+    $('#tTvlDelta').textContent = d.eth.toFixed(6) + ' ETH · ' + short;
+    $('#tTvlDelta').className = 'delta mono muted';
+    $('#tTvlLabel').textContent = 'Treasury · live balance of the vault wallet, in USDC';
+    const sub = $('#calcTreasurySub');
+    if (sub) sub.textContent = d.eth.toFixed(6) + ' ETH @ $' + Math.round(d.price).toLocaleString('en-US') + ' · ' + short;
+    if (window.calc) window.calc();
+    if (!cached) { try { localStorage.setItem(TRE_KEY, JSON.stringify(d)); } catch (e) { /* private mode */ } }
+  }
+
+  // last known treasury paints instantly; the live read replaces it a moment later
+  try {
+    const cached = JSON.parse(localStorage.getItem(TRE_KEY) || 'null');
+    if (cached && typeof cached.usd === 'number') paintTreasury(cached, true);
+  } catch (e) { /* ignore */ }
   async function loadEthPrice() {
     try {
       const j = await fetch('https://api.coinbase.com/v2/prices/ETH-USD/spot').then(r => r.json());
@@ -281,21 +305,14 @@
     if (!isAddr(w) || !url) return false;
     try {
       const [natHex, tokHex, decHex] = await Promise.all([
-        rpc(url, 'eth_getBalance', [w, 'latest']),
+        rpc(url, 'eth_getBalance', [w, 'latest'], 6),
         isAddr(tk) ? call(url, tk, SEL.balanceOf + pad(w)) : Promise.resolve('0x0'),
         isAddr(tk) ? call(url, tk, SEL.decimals).catch(() => '0x12') : Promise.resolve('0x12'),
       ]);
       const nat = BigInt(natHex), tok = BigInt(tokHex), dec = parseInt(decHex, 16) || 18;
-      const eth = Number(nat) / 1e18, usdLive = eth * ethPrice;
-      const usd = Math.max(usdLive, CONFIG.TREASURY_FLOOR);
-      window.TREASURY = usd;                                  // feeds the payout calculator
-      $('#tTvl').textContent = '$' + Math.round(usd).toLocaleString('en-US');
-      $('#tTvlDelta').textContent = eth.toFixed(4) + ' ETH · ' + w.slice(0, 6) + '…' + w.slice(-4);
-      $('#tTvlDelta').className = 'delta mono muted';
-      $('#tTvlLabel').textContent = 'Treasury · live balance of the vault wallet';
-      const sub = $('#calcTreasurySub');
-      if (sub) sub.textContent = eth.toFixed(4) + ' ETH @ $' + Math.round(ethPrice).toLocaleString('en-US') + ' · ' + w.slice(0, 6) + '…' + w.slice(-4);
-      if (window.calc) window.calc();
+      // native ETH held by the vault wallet, valued at the live ETH price = USDC equivalent
+      const eth = Number(nat) / 1e18, usd = Math.max(eth * ethPrice, CONFIG.TREASURY_FLOOR);
+      paintTreasury({ usd, eth, price: ethPrice, w, at: Date.now() });
       return true;
     } catch (e) {
       console.warn('treasury read failed', e);
@@ -304,6 +321,7 @@
     }
   }
   // auto-start: price first, then the wallet, refreshed every 30s
-  if (isAddr(CONFIG.FEE_WALLET)) loadEthPrice().then(readTreasury).then(ok => { if (ok) trackTimer = setInterval(readTreasury, 30000); });
+  // always keep the 30s refresh running: a failed read just retries on the next tick
+  if (isAddr(CONFIG.FEE_WALLET)) loadEthPrice().then(readTreasury).finally(() => { trackTimer = setInterval(readTreasury, 30000); });
   if (isAddr(CONFIG.TOKEN)) loadToken().then(scan);
 })();
