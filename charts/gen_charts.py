@@ -142,17 +142,32 @@ ax.set_ylim(0, 4.1); ax.legend(loc="upper left", fontsize=16, frameon=False, lab
 save(f, "10_treasury_vs_pool.png")
 print("pools", [round(p) for p in pools], "per1M", round(pool8*1e6/elig))
 
-# 11 no staking / no claiming
-f = fig("No staking. No claiming. No “connect wallet to unlock rewards”.", None, foot=False)
-ax = f.add_axes([0.05, 0.14, 0.9, 0.66]); ax.set_xlim(0, 100); ax.set_ylim(0, 10); ax.axis("off")
-for i, t in enumerate(["Staking", "Claiming", "Connect wallet to unlock"]):
-    y = 8.2 - i * 2.6
-    ax.add_patch(FancyBboxPatch((2, y - 0.9), 40, 1.8, boxstyle="round,pad=0,rounding_size=0.9", fc=PANEL, ec=LINE, lw=1.5))
-    ax.text(22, y, t, ha="center", va="center", fontsize=24, color=MUTED)
-    ax.plot([5, 39], [y, y], color=RED, lw=4, solid_capstyle="round")
-ax.add_patch(FancyBboxPatch((50, 1.2), 48, 8.4, boxstyle="round,pad=0,rounding_size=1.2", fc=LIME, ec="none"))
-ax.text(74, 6.9, "You hold.", ha="center", va="center", fontsize=52, fontweight="bold", color=BG)
-ax.text(74, 4.4, "Money shows up.", ha="center", va="center", fontsize=40, fontweight="bold", color=BG)
-ax.text(74, 2.4, "$VAULT in your wallet  ·  USDC in your wallet", ha="center", va="center", fontsize=16, color="#3d4a00", family=MONO)
-ax.annotate("", xy=(49, 5.4), xytext=(43.5, 5.4), arrowprops=dict(arrowstyle="-|>", color=LIME, lw=3, mutation_scale=28))
+# 11 traded → accumulates → multiplies
+f = fig("Token gets traded → money accumulates → money multiplies", "No staking. No claiming. You hold, the vault works, USDC shows up.", foot=False)
+ax = f.add_axes([0.03, 0.14, 0.94, 0.62]); ax.set_xlim(0, 100); ax.set_ylim(0, 10); ax.axis("off")
+random.seed(3)
+cards = [("1", "Token gets traded", "every buy & sell pays 3%"), ("2", "Money accumulates", "100% of fees → vault treasury"), ("3", "Money multiplies", "Hyperliquid vault yield, weekly")]
+cw, gap = 28, 5; x0 = (100 - (3 * cw + 2 * gap)) / 2
+for i, (n, t, sub) in enumerate(cards):
+    x = x0 + i * (cw + gap); last = i == 2
+    ax.add_patch(FancyBboxPatch((x, 1), cw, 8.4, boxstyle="round,pad=0,rounding_size=1", fc=LIME if last else PANEL, ec=LIME if last else LINE, lw=2))
+    ink = BG if last else TEXT; acc = BG if last else LIME; mut = "#3d4a00" if last else MUTED
+    ax.text(x + 1.4, 8.7, n, fontsize=16, color=acc, family=MONO, fontweight="bold", va="top")
+    ax.text(x + cw / 2, 2.3, t, ha="center", va="center", fontsize=21, fontweight="bold", color=ink)
+    ax.text(x + cw / 2, 1.55, sub, ha="center", va="center", fontsize=13, color=mut)
+    # mini chart inside the card
+    gx, gy, gw, gh = x + 3, 3.4, cw - 6, 4.2
+    if i == 0:   # trades: random up/down bars
+        for k in range(14):
+            h = random.uniform(0.8, 3.6); up = random.random() > 0.4
+            ax.add_patch(plt.Rectangle((gx + k * (gw / 14) + 0.15, gy), gw / 14 - 0.3, h, fc=LIME if up else RED, alpha=.9))
+    elif i == 1: # accumulation: staircase
+        for k in range(10):
+            ax.add_patch(plt.Rectangle((gx + k * (gw / 10) + 0.1, gy), gw / 10 - 0.2, 0.4 + k * 0.4, fc=LIME, alpha=.95))
+    else:        # multiply: curve
+        xs = [gx + gw * k / 40 for k in range(41)]; ys = [gy + 0.15 + gh * (1.13 ** k - 1) / (1.13 ** 40 - 1) for k in range(41)]
+        ax.fill_between(xs, [gy] * 41, ys, color=BG, alpha=.12); ax.plot(xs, ys, color=BG, lw=4)
+        ax.plot([xs[-1]], [ys[-1]], "o", ms=10, mfc=BG, mec=BG)
+    if not last: ax.annotate("", xy=(x + cw + gap - 0.6, 5.2), xytext=(x + cw + 0.6, 5.2), arrowprops=dict(arrowstyle="-|>", color=LIME, lw=3, mutation_scale=26))
+ax.text(50, 0.1, "USDC lands in your wallet every Monday. You did nothing but hold.", ha="center", va="center", fontsize=18, color=MUTED)
 save(f, "11_no_staking.png")
