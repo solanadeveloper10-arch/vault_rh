@@ -290,7 +290,7 @@
     ctx.beginPath(); for (let i = 0; i <= MAX; i++) i ? ctx.lineTo(x(i), y(holdMult(i))) : ctx.moveTo(x(i), y(holdMult(i))); ctx.strokeStyle = lime; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = css('--bg'); ctx.beginPath(); ctx.arc(x(d), y(m), 5, 0, 7); ctx.fill(); ctx.strokeStyle = lime; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = muted; ctx.font = '10px ' + css('--mono'); ctx.textAlign = 'left'; ctx.fillText('day 0', padL, h - 4);
-    ctx.textAlign = 'center'; ctx.fillText('day 7 · ×2 max', x(7), h - 4);
+    ctx.textAlign = 'right'; ctx.fillText('day 7 · ×2 max · epoch resets', w, h - 4);
     ctx.font = '600 14px ' + css('--mono'); ctx.fillStyle = lime;
     ctx.textAlign = d > MAX * 0.72 ? 'right' : 'left';
     ctx.fillText(d > MAX * 0.72 ? '×' + m.toFixed(2) + '  ' : '  ×' + m.toFixed(2), x(d), y(m) - 12);

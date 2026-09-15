@@ -109,13 +109,13 @@ f.text(0.5, 0.25, "Excluded wallets don’t get a smaller slice. They get zero.\
 save(f, "07_verified_vs_excluded.png")
 
 # 08 multiplier curve
-f = fig("Every day you hold, your multiplier grows", "0 days → nothing. Day 7 → ×2, and that is the cap. No tiers, no cliffs, nothing to chase after a week.")
+f = fig("Every day you hold, your multiplier grows", "0 days → nothing. Day 7 → ×2, the cap. The counter restarts at every epoch, so a week is the whole game.")
 ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax, left=True)
-days = list(range(0, 15)); ms = [mult(d) for d in days]
+days = list(range(0, 8)); ms = [mult(d) for d in days]
 ax.fill_between(days, ms, color=LIME, alpha=.18); ax.plot(days, ms, color=LIME, lw=3.5)
-for d in (1, 4, 7): ax.plot([d], [mult(d)], "o", ms=11, mfc=BG, mec=LIME, mew=2.5); ax.text(d, mult(d) + 0.11, f"day {d} · ×{mult(d):g}" + (" max" if d >= 7 else ""), ha="center", fontsize=17, family=MONO)
-ax.set_xlim(0, 14); ax.set_ylim(0, 2.45); ax.set_yticks([0, 0.5, 1, 1.5, 2]); ax.set_yticklabels(["×0", "×0.5", "×1", "×1.5", "×2"], fontsize=15)
-ax.set_xticks([0, 2, 4, 7, 10, 14]); ax.set_xticklabels(["day 0", "day 2", "day 4", "day 7", "day 10", "day 14"], fontsize=16)
+for d in (1, 4, 7): ax.plot([d], [mult(d)], "o", ms=11, mfc=BG, mec=LIME, mew=2.5); ax.text(d, mult(d) + 0.11, f"×{mult(d):g}" + (" max" if d >= 7 else ""), ha="right" if d == 7 else "center", fontsize=17, family=MONO)
+ax.set_xlim(0, 7); ax.set_ylim(0, 2.45); ax.set_yticks([0, 0.5, 1, 1.5, 2]); ax.set_yticklabels(["×0", "×0.5", "×1", "×1.5", "×2"], fontsize=15)
+ax.set_xticks(range(8)); ax.set_xticklabels([f"day {d}" for d in range(8)], fontsize=16)
 save(f, "08_multiplier_curve.png")
 
 # 09 payout per 1M tokens by days held (week 8 pool)
