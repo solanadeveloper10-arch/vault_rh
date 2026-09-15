@@ -53,8 +53,8 @@
       }
       setRow('hold', holding ? 'ok' : 'bad', holding ? fmtBig(bal, dec) + ' ' + unit : '0 ' + unit);
       setRow('min', pass ? 'ok' : 'bad', pct === null ? (pass ? 'funded wallet' : 'empty wallet') : pct.toFixed(4) + '%');
-      setRow('cluster', pass ? 'ok' : '', pass ? 'clear' : '—');        // v0.1: balance is the only gate
-      setRow('activity', pass ? 'ok' : '', pass ? 'clear' : '—');
+      setRow('cluster', 'ok', 'clear');                                  // v0.1: balance is the only gate
+      setRow('activity', 'ok', 'clear');
       const score = pass ? 100 : holding ? 40 : 0;
       const ring = $('#scoreRing'); ring.style.setProperty('--p', score); ring.style.setProperty('--ring', pass ? 'var(--lime)' : 'var(--red)');
       $('#scoreVal').textContent = score; $('#scoreVal').className = 'mono ' + (pass ? 'lime' : 'red');
