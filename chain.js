@@ -11,7 +11,7 @@
   const CONFIG = {
     RPC: 'https://rpc.mainnet.chain.robinhood.com',   // Robinhood Chain mainnet (chain id 4663)
     TOKEN: '',                                 // $VAULT ERC-20 contract address (empty = check native ETH balance on Robinhood Chain)
-    FEE_WALLET: '',                            // wallet receiving the 3% fee → shown as TREASURY
+    FEE_WALLET: '',                            // wallet receiving the 1.5% fee → shown as TREASURY
     FROM_BLOCK: null,                          // token deploy block (null = last 200k blocks)
   };
   const isAddr = a => /^0x[0-9a-fA-F]{40}$/.test(a || '');

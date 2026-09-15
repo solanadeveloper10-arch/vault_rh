@@ -33,7 +33,7 @@ def lab(ax, x, y, t, size=22, color=TEXT): ax.text(x, y, t, ha="center", va="bot
 def mult(d): return 0 if d <= 0 else round(d * 2 / 7, 2) if d <= 7 else min(4, round(2 + (d - 7) * 0.1, 2))
 
 # 01 fee: 100% to vault
-f = fig(r"Every \$100 traded → \$3 goes into the vault", "3% fee on every buy and sell. 100% of it goes to the treasury on Hyperliquid.", foot=False)
+f = fig(r"Every \$100 traded → \$1.50 goes into the vault", "1.5% fee on every buy and sell. 100% of it goes to the treasury on Hyperliquid.", foot=False)
 ax = f.add_axes([0.05, 0.34, 0.9, 0.34]); clean(ax, bottom=False)
 ax.barh([0], [100], color=LIME, height=0.55); ax.set_xlim(0, 100); ax.set_ylim(-0.6, 0.6)
 ax.text(50, 0, "100%  →  vault treasury", ha="center", va="center", fontsize=28, fontweight="bold", color=BG)
@@ -43,7 +43,7 @@ save(f, "01_fee_split.png")
 # 02 flow
 f = fig("How the machine works", "Five steps. Nothing manual in the middle.")
 ax = f.add_axes([0.03, 0.18, 0.94, 0.58]); ax.set_xlim(0, 100); ax.set_ylim(0, 10); ax.axis("off")
-steps = [("1", "You trade\n$VAULT", "on Robinhood Chain"), ("2", "3% fee\ncollected", "100% → treasury"), ("3", "Deposited in a\nHyperliquid vault", "top-APR vault, auto"),
+steps = [("1", "You trade\n$VAULT", "on Robinhood Chain"), ("2", "1.5% fee\ncollected", "100% → treasury"), ("3", "Deposited in a\nHyperliquid vault", "top-APR vault, auto"),
          ("4", "Vault earns\nyield", "every 7 days"), ("5", "USDC for\nloyal holders", "99% holders · 1% team")]
 n = len(steps); bw = 16; gap = (100 - n * bw) / (n - 1)
 for i, (num, t, s) in enumerate(steps):
@@ -59,22 +59,22 @@ save(f, "02_flow.png")
 # 03 weekly fees by scenario
 f = fig("How much flows into the vault every week", "Per 7-day epoch. Depends on one thing: how much $VAULT is traded per day.")
 ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax)
-vals = [105, 420, 1050]
+vals = [52.5, 210, 525]
 ax.bar(range(3), vals, color=[LIME_DIM, LIME, LIME], width=0.55)
 ax.set_xticks(range(3)); ax.set_xticklabels(["Quiet\n$500K / day", "Good\n$2M / day", "Degen\n$5M / day"], fontsize=18)
-for i, v in enumerate(vals): lab(ax, i, v + 20, f"${v/1000:.2f}M" if v >= 1000 else f"${v}K", 28)
-ax.set_ylim(0, 1250); save(f, "03_fees_by_scenario.png")
+for i, v in enumerate(vals): lab(ax, i, v + 20, f"${v/1000:.2f}M" if v >= 1000 else f"${v:g}K", 28)
+ax.set_ylim(0, 640); save(f, "03_fees_by_scenario.png")
 
 # 04 pool growth weekly (good, 100% APR, 99% to holders)
 t = 0; pools = []
-for w in range(8): t += 420_000; pools.append(t / 52 * 0.99)
+for w in range(8): t += 210_000; pools.append(t / 52 * 0.99)
 f = fig("The weekly payout pool keeps growing", "Good scenario ($2M/day). Holder pool = 99% of yield. Treasury never leaves the vault.")
 ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax)
 ax.bar(range(8), [p / 1000 for p in pools], color=LIME, width=0.55)
 ax.set_xticks(range(8)); ax.set_xticklabels([f"Week {i+1}" for i in range(8)], fontsize=16)
-for i, p in enumerate(pools): lab(ax, i, p / 1000 + 1.2, f"${p/1000:,.0f}K", 22)
-ax.set_ylim(0, 78)
-ax.text(0, 66, "Every week more fees sit in the vault,\nso every week there is more yield to split.", fontsize=17, color=MUTED, va="top")
+for i, p in enumerate(pools): lab(ax, i, p / 1000 + 0.6, f"${p/1000:,.0f}K", 22)
+ax.set_ylim(0, 40)
+ax.text(0, 34, "Every week more fees sit in the vault,\nso every week there is more yield to split.", fontsize=17, color=MUTED, va="top")
 save(f, "04_pool_growth.png")
 
 # 05 per holder week 8, 7 days held (×2), avg ×2
@@ -85,8 +85,8 @@ ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax)
 vals = [pool8 * b / elig for _, b in bags]
 ax.bar(range(4), vals, color=[LIME_DIM, LIME, LIME, LIME], width=0.55)
 ax.set_xticks(range(4)); ax.set_xticklabels([f"{n} $VAULT" for n, _ in bags], fontsize=18)
-for i, v in enumerate(vals): lab(ax, i, v + 60, f"${v:,.0f}", 26)
-ax.set_ylim(0, 3700); ax.text(0, 3200, "in USDC, for that one week.\nHold 27 days → ×4 → double these numbers.", fontsize=17, color=MUTED, va="top")
+for i, v in enumerate(vals): lab(ax, i, v + 30, f"${v:,.0f}", 26)
+ax.set_ylim(0, 1850); ax.text(0, 1600, "in USDC, for that one week.\nHold 27 days → ×4 → double these numbers.", fontsize=17, color=MUTED, va="top")
 save(f, "05_per_holder.png")
 
 # 06 holder check: eligible vs sybil
@@ -124,21 +124,21 @@ ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax)
 ds = [1, 3, 7, 14, 27]; vals = [pool8 * 1e6 * mult(d) / (elig * 2) for d in ds]
 ax.bar(range(5), vals, color=[LIME_DIM, LIME_DIM, LIME, LIME, LIME], width=0.55)
 ax.set_xticks(range(5)); ax.set_xticklabels([f"{d} day{'s' if d > 1 else ''}\n×{mult(d):g}" for d in ds], fontsize=17)
-for i, v in enumerate(vals): lab(ax, i, v + 6, f"${v:,.0f}", 24)
-ax.set_ylim(0, 360); ax.text(0, 320, "Selling restarts the counter for the part you sold.\nThe part you keep holds its days.", fontsize=16, color=MUTED, va="top")
+for i, v in enumerate(vals): lab(ax, i, v + 3, f"${v:,.0f}", 24)
+ax.set_ylim(0, 180); ax.text(0, 160, "Selling restarts the counter for the part you sold.\nThe part you keep holds its days.", fontsize=16, color=MUTED, va="top")
 save(f, "09_days_held_payout.png")
 
 # 10 treasury vs pool weekly
 f = fig("Principal stays. Yield gets paid.", "Good scenario, 100% APR. Green = money staying in the vault. Cream = paid out that week.")
 ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax)
-tre = [(i + 1) * 0.42 for i in range(8)]; pm = [p / 1e6 for p in pools]
+tre = [(i + 1) * 0.21 for i in range(8)]; pm = [p / 1e6 for p in pools]
 ax.bar(range(8), tre, color=LIME, width=0.55, label="Treasury in the vault (stays)")
-ax.bar(range(8), [max(p, 0.02) for p in pm], bottom=[x + 0.02 for x in tre], color=CREAM, width=0.55, label="Paid out to holders that week")
+ax.bar(range(8), [max(p, 0.01) for p in pm], bottom=[x + 0.01 for x in tre], color=CREAM, width=0.55, label="Paid out to holders that week")
 ax.set_xticks(range(8)); ax.set_xticklabels([f"Week {i+1}" for i in range(8)], fontsize=16)
 for i in range(8):
     ax.text(i, tre[i] / 2, f"${tre[i]:.2f}M", ha="center", va="center", fontsize=15, color=BG, family=MONO, fontweight="bold")
-    ax.text(i, tre[i] + 0.09, f"+${pools[i]/1000:,.0f}K", ha="center", va="bottom", fontsize=15, color=TEXT, family=MONO)
-ax.set_ylim(0, 4.1); ax.legend(loc="upper left", fontsize=16, frameon=False, labelcolor=TEXT)
+    ax.text(i, tre[i] + 0.045, f"+${pools[i]/1000:,.0f}K", ha="center", va="bottom", fontsize=15, color=TEXT, family=MONO)
+ax.set_ylim(0, 2.05); ax.legend(loc="upper left", fontsize=16, frameon=False, labelcolor=TEXT)
 save(f, "10_treasury_vs_pool.png")
 print("pools", [round(p) for p in pools], "per1M", round(pool8*1e6/elig))
 
@@ -146,7 +146,7 @@ print("pools", [round(p) for p in pools], "per1M", round(pool8*1e6/elig))
 f = fig("Token gets traded → money accumulates → money multiplies", "No staking. No claiming. You hold, the vault works, USDC shows up.", foot=False)
 ax = f.add_axes([0.03, 0.14, 0.94, 0.62]); ax.set_xlim(0, 100); ax.set_ylim(0, 10); ax.axis("off")
 random.seed(3)
-cards = [("1", "Token gets traded", "every buy & sell pays 3%"), ("2", "Money accumulates", "100% of fees → vault treasury"), ("3", "Money multiplies", "Hyperliquid vault yield, weekly")]
+cards = [("1", "Token gets traded", "every buy & sell pays 1.5%"), ("2", "Money accumulates", "100% of fees → vault treasury"), ("3", "Money multiplies", "Hyperliquid vault yield, weekly")]
 cw, gap = 28, 5; x0 = (100 - (3 * cw + 2 * gap)) / 2
 for i, (n, t, sub) in enumerate(cards):
     x = x0 + i * (cw + gap); last = i == 2

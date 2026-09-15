@@ -5,7 +5,7 @@ Images live in `charts/` (1600×900). `[chart: NN]` = attach that PNG. `[img: �
 All numbers are from the site calculator at a conservative 100% vault APR; the active vault (BredoStrategy) prints far more on paper — never promise it.
 
 Facts to keep straight
-- 3% fee on every trade, 100% → treasury → Hyperliquid vault (auto-picked, top APR, TVL ≥ $1M, age ≥ 120d). Currently BredoStrategy.
+- 1.5% fee on every trade, 100% → treasury → Hyperliquid vault (auto-picked, top APR, TVL ≥ $1M, age ≥ 120d). Currently BredoStrategy.
 - Epoch = 7 days. Snapshot every Monday 00:00 UTC, USDC paid to wallets, no claim. Launched Sep 15 · epoch #01 snapshot Sep 22.
 - Multiplier by days held: day 0 ×0 → day 7 ×2 → +0.1/day → ×4 at day 27. Selling restarts the counter for what you sold.
 - Eligible = wallet holds $VAULT on Robinhood Chain. Empty wallet = sybil. Team: 0% fee, 0% supply, 1% of weekly yield after the epoch.
@@ -123,7 +123,7 @@ Here’s the whole machine 🧵
 
 **2/**
 Step 1 — Fee.
-3% on every buy and sell.
+1.5% on every buy and sell.
 100% of it goes to the treasury. Not 95, not 80. All of it.
 
 Team takes 0% of the fee and 0% of supply.
@@ -167,11 +167,11 @@ Trade fees → Hyperliquid vault → USDC for loyal holders.
 Three volume scenarios, one conservative assumption (100% vault APR), all from the calculator on the site. 🧵
 
 **2/**
-Every $100 traded → $3 into the vault. Per 7-day epoch:
+Every $100 traded → $1.50 into the vault. Per 7-day epoch:
 
-quiet   $500K/day → $105K
-good    $2M/day   → $420K
-degen   $5M/day   → $1.05M
+quiet   $500K/day → $52K
+good    $2M/day   → $210K
+degen   $5M/day   → $525K
 
 That’s the treasury growing every week before any yield.
 `[chart: 03_fees_by_scenario]`
@@ -179,9 +179,9 @@ That’s the treasury growing every week before any yield.
 **3/**
 The pool. Good scenario, 100% APR, 99% to holders:
 
-week 1 ≈ $8K
-week 4 ≈ $32K
-week 8 ≈ $64K
+week 1 ≈ $4K
+week 4 ≈ $16K
+week 8 ≈ $32K
 
 It grows because nothing is ever withdrawn from the vault.
 `[chart: 04_pool_growth]`
@@ -189,10 +189,10 @@ It grows because nothing is ever withdrawn from the vault.
 **4/**
 Per holder, week 8, held 7 days (×2):
 
-100K $VAULT → ≈ $15
-1M → ≈ $152
-5M → ≈ $760
-20M → ≈ $3,050
+100K $VAULT → ≈ $8
+1M → ≈ $76
+5M → ≈ $380
+20M → ≈ $1,520
 
 Hold 27 days → ×4 → double it.
 `[chart: 05_per_holder]`
@@ -252,9 +252,9 @@ day 27 → ×4 (cap)
 **3/**
 Same bag, different patience. 1M $VAULT, week 8:
 
-1 day → $22
-7 days → $152
-27 days → $305
+1 day → $11
+7 days → $76
+27 days → $152
 
 Nothing to lock. Just don’t sell.
 `[chart: 09_days_held_payout]`
@@ -273,7 +273,7 @@ And the vault itself never shrinks: fees go in every week, only yield comes out.
 
 **A · launch**
 $VAULT is live.
-3% fee → Hyperliquid vault → USDC every Monday.
+1.5% fee → Hyperliquid vault → USDC every Monday.
 Day 0. Counter starts now.
 
 **B · one-liner**
@@ -325,7 +325,7 @@ Nothing to do. Just don’t sell.
 Trade fees → Hyperliquid vault → USDC for loyal holders. Paid every Monday. Hold longer, earn more.
 
 **Listing**
-$VAULT on Robinhood Chain. 100% of the 3% trade fee is deposited into the top-APR Hyperliquid vault, auto-rotated weekly. Yield is paid in USDC every 7 days to wallets holding the token, weighted by days held (×2 at day 7, ×4 at day 27). Team: 0% supply, 1% of yield.
+$VAULT on Robinhood Chain. 100% of the 1.5% trade fee is deposited into the top-APR Hyperliquid vault, auto-rotated weekly. Yield is paid in USDC every 7 days to wallets holding the token, weighted by days held (×2 at day 7, ×4 at day 27). Team: 0% supply, 1% of yield.
 
 ---
 
@@ -333,7 +333,7 @@ $VAULT on Robinhood Chain. 100% of the 3% trade fee is deposited into the top-AP
 
 | File | Used in | Meaning |
 |------|---------|---------|
-| 01_fee_split | T1/2, E | $3 of every $100 traded → vault, 100% |
+| 01_fee_split | T1/2, E | $1.50 of every $100 traded → vault, 100% |
 | 02_flow | T1/5 | Trade → fee → vault → yield → USDC |
 | 03_fees_by_scenario | T2/2 | Weekly inflow at $500K / $2M / $5M per day |
 | 04_pool_growth | T2/3 | Weekly holder pool, weeks 1–8 |

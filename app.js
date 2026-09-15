@@ -169,7 +169,7 @@
 
   /* ---------- simple calculator ---------- */
   let lastPool = 0;
-  const SUPPLY = 1e9, START_TREASURY = 6200, FEE = 0.03, TO_VAULT = 1.0, ELIGIBLE = 0.42, TEAM_CUT = 0.01, AVG_MULT = 2; // team: 1% of yield after each epoch
+  const SUPPLY = 1e9, START_TREASURY = 6200, FEE = 0.015, TO_VAULT = 1.0, ELIGIBLE = 0.42, TEAM_CUT = 0.01, AVG_MULT = 2; // team: 1% of yield after each epoch
   // progressive: day 0 = ×0, linear to ×2 at day 7, then +0.1/day, capped at ×4 (day 27)
   const holdMult = d => d <= 0 ? 0 : d <= 7 ? +(d * 2 / 7).toFixed(2) : Math.min(4, +(2 + (d - 7) * 0.1).toFixed(2));
   window.holdMult = holdMult;
@@ -255,7 +255,7 @@
       ctx.beginPath(); ctx.arc(100, 100, 92, a, e); ctx.arc(100, 100, 62, e, a, true); ctx.closePath();
       ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = css('--panel'); ctx.lineWidth = 3; ctx.stroke(); a = e;
     });
-    ctx.fillStyle = css('--text'); ctx.textAlign = 'center'; ctx.font = '600 22px ' + css('--mono'); ctx.fillText('3.0%', 100, 98);
+    ctx.fillStyle = css('--text'); ctx.textAlign = 'center'; ctx.font = '600 22px ' + css('--mono'); ctx.fillText('1.5%', 100, 98);
     ctx.fillStyle = css('--muted'); ctx.font = '11px ' + css('--sans'); ctx.fillText('fee per trade', 100, 116);
     $('#feeLegend').innerHTML = parts.map(([n, p, col]) => `<div><i class="sw" style="background:${col}"></i>${n}<span class="mono">${p}%</span></div>`).join('');
   }
