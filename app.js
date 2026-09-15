@@ -154,7 +154,7 @@
           <div><span class="k">APR (${range})</span><span class="v mono ${apr >= 0 ? 'up' : 'down'}">${fmtPct(apr)}</span></div>
           <div><span class="k">Weekly, simple</span><span class="v mono">${fmtPct(weekly)}</span></div>
           <div><span class="k">TVL</span><span class="v mono">${fmtUSDc(v.tvl)}</span></div>
-          <div><span class="k">Treasury share of TVL</span><span class="v mono">${(START_TREASURY / v.tvl * 100).toFixed(3)}%</span></div>
+          <div><span class="k">Treasury share of TVL</span><span class="v mono">${((window.TREASURY || 0) / v.tvl * 100).toFixed(3)}%</span></div>
         </div>
       </div>
       <div class="panel vd__why">
@@ -169,34 +169,41 @@
 
   /* ---------- simple calculator ---------- */
   let lastPool = 0;
-  const SUPPLY = 1e9, START_TREASURY = 6200, FEE = 0.015, TO_VAULT = 1.0, ELIGIBLE = 0.42, TEAM_CUT = 0.01, AVG_MULT = 2; // team: 1% of yield after each epoch
-  // progressive: day 0 = ×0, linear to ×2 at day 7, then +0.1/day, capped at ×4 (day 27)
-  const holdMult = d => d <= 0 ? 0 : d <= 7 ? +(d * 2 / 7).toFixed(2) : Math.min(4, +(2 + (d - 7) * 0.1).toFixed(2));
+  const SUPPLY = 1e9, ELIGIBLE = 0.42, TEAM_CUT = 0.01, AVG_MULT = 2; // team: 1% of yield after each epoch
+  // progressive by day, capped at ×2 once a full 7-day epoch is held
+  const holdMult = d => d <= 0 ? 0 : Math.min(2, +(d * 2 / 7).toFixed(2));
   window.holdMult = holdMult;
+  // live treasury (USD) — chain.js overwrites this from the vault wallet, then calls calc()
+  window.TREASURY = 6200;
 
   function calc() {
     const v = VAULTS.find(x => x.id === selectedId); const apr = aprFor(v) / 100;
-    const tokens = Math.max(0, +$('#tokens').value || 0), dvol = Math.max(0, +$('#dvol').value || 0), days = Math.max(0, Math.floor(+$('#days').value || 0));
+    const tokens = Math.max(0, +$('#tokens').value || 0), days = Math.max(0, Math.floor(+$('#days').value || 0));
+    const treasury = Math.max(0, window.TREASURY || 0);
     $('#calcVaultName').textContent = v.name; $('#calcVaultApr').textContent = fmtPct(aprFor(v)) + ' APR';
     $('#calcVaultApr').className = 'mono ' + (apr >= 0 ? 'up' : 'down');
 
-    const fees = dvol * 7 * FEE * TO_VAULT;                  // fees routed to vault this week
-    const yieldM = Math.max(0, (START_TREASURY + fees) * apr / 52); // vault yield this 7-day epoch
+    const yieldM = Math.max(0, treasury * apr / 52);         // vault yield on the treasury over one 7-day epoch
     const team = yieldM * TEAM_CUT;
     const pool = yieldM - team;                                // distributed to verified holders
     const mult = holdMult(days);
-    const share = Math.min(1, tokens * mult / (SUPPLY * ELIGIBLE * AVG_MULT)); // balance × multiplier vs everyone's
+    const pctSupply = tokens / SUPPLY;                       // your % of total supply
+    const share = Math.min(1, pctSupply * mult / (ELIGIBLE * AVG_MULT)); // weighted against every eligible holder
     const month = pool * share;
 
     $('#rMonth').textContent = month < 100 ? '$' + month.toFixed(2) : fmtUSD(month);
     $('#rDay').textContent = '$' + (month / 7).toFixed(2);
-    $('#bMult').firstChild.textContent = '×' + mult.toFixed(2) + ' '; $('#bMultNote').textContent = '· ' + days + ' days held' + (mult === 0 ? ' · hold at least 1 day' : '');
-    $('#bFees').textContent = fmtUSD(fees); $('#bYield').textContent = fmtUSD(yieldM); $('#bTeam').textContent = fmtUSD(team); $('#bPool').textContent = fmtUSD(pool);
+    $('#bMult').firstChild.textContent = '×' + mult.toFixed(2) + ' ';
+    $('#bMultNote').textContent = '· ' + days + (days === 1 ? ' day held' : ' days held') + (mult === 0 ? ' · hold at least 1 day' : mult === 2 ? ' · max' : '');
+    $('#calcTreasury').textContent = fmtUSD(treasury);
+    $('#tokensPct').textContent = '= ' + (pctSupply * 100).toFixed(4).replace(/0+$/, '').replace(/\.$/, '') + '% of total supply';
+    $('#bYield').textContent = fmtUSD(yieldM); $('#bTeam').textContent = fmtUSD(team); $('#bPool').textContent = fmtUSD(pool);
     $('#bShare').textContent = (share * 100).toFixed(4).replace(/0+$/, '').replace(/\.$/, '') + '%';
     $('#nextPool').textContent = fmtUSD(pool); lastPool = pool;
     const ep = $('#epochPool'); if (ep) ep.textContent = '~' + fmtUSD(pool);
     $$('.presets').forEach(p => { const val = +$('#' + p.dataset.for).value; $$('button', p).forEach(bt => bt.classList.toggle('is-on', +bt.dataset.v === val)); });
   }
+  window.calc = calc;
 
   /* ---------- epoch timeline (project just launched) ---------- */
   const EPOCHS = [
@@ -273,22 +280,24 @@
     const c = $('#loyalChart'); const { ctx, w, h } = setupCanvas(c, 120);
     const lime = css('--lime'), muted = css('--muted');
     ctx.clearRect(0, 0, w, h); const padB = 18, padL = 4, ih = h - padB - 10, iw = w - padL - 4;
-    const x = day => padL + (day / MAX) * iw, y = mult => 10 + ih - (mult / 4) * ih;
-    ctx.strokeStyle = 'rgba(255,255,255,.06)'; [1, 2, 3, 4].forEach(v => { ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(w, y(v)); ctx.stroke(); });
+    const x = day => padL + (day / MAX) * iw, y = mult => 10 + ih - (mult / 2) * ih;
+    ctx.strokeStyle = 'rgba(255,255,255,.06)'; [0.5, 1, 1.5, 2].forEach(v => { ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(w, y(v)); ctx.stroke(); });
     const g = ctx.createLinearGradient(0, 10, 0, h); g.addColorStop(0, lime + '44'); g.addColorStop(1, lime + '00');
     ctx.beginPath(); ctx.moveTo(x(0), y(0)); for (let i = 0; i <= MAX; i++) ctx.lineTo(x(i), y(holdMult(i))); ctx.lineTo(x(MAX), y(0)); ctx.closePath(); ctx.fillStyle = g; ctx.fill();
     ctx.beginPath(); for (let i = 0; i <= MAX; i++) i ? ctx.lineTo(x(i), y(holdMult(i))) : ctx.moveTo(x(i), y(holdMult(i))); ctx.strokeStyle = lime; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = css('--bg'); ctx.beginPath(); ctx.arc(x(d), y(m), 5, 0, 7); ctx.fill(); ctx.strokeStyle = lime; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = muted; ctx.font = '10px ' + css('--mono'); ctx.textAlign = 'left'; ctx.fillText('day 0', padL, h - 4);
-    ctx.textAlign = 'center'; ctx.fillText('day 7 · ×2', x(7), h - 4); ctx.fillText('day 27 · ×4 cap', x(27), h - 4);
-    ctx.fillStyle = lime; ctx.textAlign = d > MAX * 0.7 ? 'right' : 'left'; ctx.fillText(' ×' + m.toFixed(2) + ' ', x(d), y(m) - 9);
+    ctx.textAlign = 'center'; ctx.fillText('day 7 · ×2 max', x(7), h - 4);
+    ctx.font = '600 14px ' + css('--mono'); ctx.fillStyle = lime;
+    ctx.textAlign = d > MAX * 0.72 ? 'right' : 'left';
+    ctx.fillText(d > MAX * 0.72 ? '×' + m.toFixed(2) + '  ' : '  ×' + m.toFixed(2), x(d), y(m) - 12);
   }
 
   /* ---------- wire up ---------- */
   buildTicker(); drawHero(); tickCountdown(); setInterval(tickCountdown, 30000);
   renderTable(); renderDetail(); renderEpochs(); drawCluster(); drawFee(); calc(); loyalSim();
   $('#heldDays').addEventListener('input', loyalSim);
-  ['tokens', 'dvol', 'days'].forEach(id => $('#' + id).addEventListener('input', calc));
+  ['tokens', 'days'].forEach(id => $('#' + id).addEventListener('input', calc));
   $$('.presets button').forEach(bt => bt.addEventListener('click', () => { $('#' + bt.parentElement.dataset.for).value = bt.dataset.v; calc(); }));
   $$('#rangeSeg .seg__btn').forEach(b => b.addEventListener('click', () => {
     $$('#rangeSeg .seg__btn').forEach(x => x.classList.remove('is-active')); b.classList.add('is-active');

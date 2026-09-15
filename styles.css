@@ -386,3 +386,15 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 @media (max-width:1024px){.chain__grid{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.chain__grid{grid-template-columns:1fr}}
 .chain{padding-top:8px}
+
+/* calculator: live treasury card + supply hint */
+.scalc__treasury{padding:14px 16px;background:linear-gradient(180deg,rgba(204,255,0,.07),transparent);border:1px solid var(--line-2);border-radius:12px}
+.scalc__treasury .v{font-size:30px;font-weight:600;letter-spacing:-.02em;margin:2px 0 4px}
+.field__hint{display:block;margin-top:6px;color:var(--muted)}
+
+/* nav icon button + inactive community links */
+.btn--icon{width:38px;padding:0}
+.footer__cols .soon{display:inline-flex;align-items:center;gap:8px;color:var(--muted);cursor:default}
+.footer__cols .soon i{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--lime);border:1px solid rgba(204,255,0,.35);border-radius:5px;padding:2px 5px}
+.footer__cols a[target]{color:var(--muted)}
+.footer__cols a[target]:hover{color:var(--text)}

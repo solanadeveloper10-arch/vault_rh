@@ -32,6 +32,7 @@
       <a href="#token">Token</a>
     </nav>
     <div class="nav__actions">
+      <a class="btn btn--ghost btn--icon" href="https://x.com/vaultdotfamily" target="_blank" rel="noopener" aria-label="X / Twitter"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M18.9 2H22l-7 8.1L23.3 22h-6.4l-5-6.6-5.8 6.6H3l7.5-8.6L2.4 2h6.6l4.5 6 5.4-6Zm-1.1 18h1.7L7.3 3.8H5.5L17.8 20Z"/></svg></a>
       <button class="btn btn--primary" id="connectBtn">Connect</button>
     </div>
   </div>
@@ -179,35 +180,28 @@
     <div class="section__head">
       <span class="label">03 — Expected income</span>
       <h2>How much do <em>you</em> get this week?</h2>
-      <p class="sub">Three numbers in, one number out. Uses this week's auto-selected vault.</p>
+      <p class="sub">Treasury is read live from the vault wallet. Add your balance and your days held.</p>
     </div>
 
     <div class="scalc panel">
       <div class="scalc__inputs">
+        <div class="scalc__treasury">
+          <span class="k">Money in the treasury <span class="muted">· live on-chain</span></span>
+          <span class="v mono lime" id="calcTreasury">—</span>
+          <span class="fine mono" id="calcTreasurySub">reading the vault wallet…</span>
+        </div>
         <div class="field">
           <label for="tokens">Your $VAULT balance</label>
           <div class="field__box">
             <input type="number" id="tokens" class="mono" value="1000000" min="0" step="1000" inputmode="numeric">
             <span class="field__unit mono">VAULT</span>
           </div>
+          <span class="fine mono field__hint" id="tokensPct">= 0.1% of total supply</span>
           <div class="presets" data-for="tokens">
             <button type="button" data-v="100000">100K</button>
             <button type="button" data-v="1000000">1M</button>
             <button type="button" data-v="5000000">5M</button>
             <button type="button" data-v="20000000">20M</button>
-          </div>
-        </div>
-        <div class="field">
-          <label for="dvol">Daily trading volume</label>
-          <div class="field__box">
-            <span class="field__unit mono">$</span>
-            <input type="number" id="dvol" class="mono" value="500000" min="0" step="10000" inputmode="numeric">
-          </div>
-          <div class="presets" data-for="dvol">
-            <button type="button" data-v="100000">$100K</button>
-            <button type="button" data-v="500000">$500K</button>
-            <button type="button" data-v="1000000">$1M</button>
-            <button type="button" data-v="5000000">$5M</button>
           </div>
         </div>
         <div class="field">
@@ -218,10 +212,10 @@
           </div>
           <div class="presets" data-for="days">
             <button type="button" data-v="0">0</button>
+            <button type="button" data-v="1">1</button>
             <button type="button" data-v="3">3</button>
-            <button type="button" data-v="7">7</button>
-            <button type="button" data-v="14">14</button>
-            <button type="button" data-v="30">30</button>
+            <button type="button" data-v="5">5</button>
+            <button type="button" data-v="7">7+</button>
           </div>
         </div>
         <div class="scalc__vault">
@@ -236,14 +230,13 @@
         <span class="scalc__big mono lime" id="rMonth">$0</span>
         <span class="scalc__day mono muted"><span id="rDay">$0</span> / day · paid in USDC every Monday</span>
         <ul class="breakdown">
-          <li><span>Fees to vault this week</span><span class="mono" id="bFees">$0</span></li>
           <li><span>Vault yield this week</span><span class="mono" id="bYield">$0</span></li>
           <li><span>Team share · 1% of yield, after the epoch</span><span class="mono" id="bTeam">$0</span></li>
           <li><span>Holder pool (99%)</span><span class="mono" id="bPool">$0</span></li>
           <li><span>Your share of eligible supply</span><span class="mono" id="bShare">0%</span></li>
           <li><span>Hold multiplier</span><span class="mono" id="bMult">×2 <span class="muted" id="bMultNote">· 7 days held</span></span></li>
         </ul>
-        <p class="fine">1.5% fee · 100% to vault · treasury since launch $6.2K · yield = (treasury + fees) × APR ÷ 52 · team takes 1% of yield after each epoch, 0% of fees · your share = balance × hold multiplier ÷ all verified balances × their multipliers (avg ×2 assumed). Vault returns vary and can be negative.</p>
+        <p class="fine">payout = treasury × vault APR ÷ 52 × 99% × (your % of supply × your multiplier ÷ eligible supply × avg multiplier). Eligible supply after the holder check = 42%, avg multiplier ×2, team takes 1% of the yield after each epoch. Vault returns vary and can be negative. Vault returns vary and can be negative.</p>
       </div>
     </div>
   </div>
@@ -276,8 +269,8 @@
           <div class="panel__title">Rules</div>
           <ul>
             <li><b>Pro-rata</b> — share = your eligible balance ÷ total eligible balance.</li>
-            <li><b>Days held = multiplier</b> — grows every single day: 0 days ×0, day 1 ×0.29 … day 7 ×2, then +0.1 per day up to ×4 at day 27.</li>
-            <li><b>Share</b> — your balance × your multiplier ÷ the sum of everyone's. A 27-day holder earns 2× a 7-day holder and 14× a 1-day holder per token.</li>
+            <li><b>Days held = multiplier</b> — grows every single day: 0 days ×0, day 1 ×0.29, day 4 ×1.14, day 7 ×2. Seven days is the cap.</li>
+            <li><b>Share</b> — your balance × your multiplier ÷ the sum of everyone's. A 7-day holder earns 7× what a 1-day holder earns per token.</li>
             <li><b>Paid in USDC</b> — every Monday, directly to your wallet, no claim needed.</li>
             <li><b>Principal stays</b> — only vault yield is distributed; the treasury keeps compounding.</li>
             <li><b>Team earns with you</b> — 1% of each epoch's yield, taken after the snapshot. 0% of trade fees, 0% of supply.</li>
@@ -353,7 +346,7 @@
           <div class="lcard">
             <span class="lcard__n mono">B</span>
             <b>Every day counts</b>
-            <p>0 days → nothing. Each day adds to the multiplier: day 1 ×0.29, day 4 ×1.14, day 7 → <em>×2</em>. After a week it keeps climbing +0.1 per day until ×4 at day 27. No cliffs, no waiting for a tier.</p>
+            <p>0 days → nothing. Each day adds to the multiplier: day 1 ×0.29, day 4 ×1.14, day 7 → <em>×2</em>. That is the maximum. One full epoch held = full weight, nothing to chase beyond it.</p>
           </div>
           <div class="lcard">
             <span class="lcard__n mono">C</span>
@@ -365,7 +358,7 @@
           <div class="loyal__sim-head"><span class="k">Try it</span><span class="v">Days held without selling → multiplier</span></div>
           <div class="ctrl">
             <div class="ctrl__head"><label for="heldDays">Days held without selling</label><span class="mono" id="heldDaysOut">7 days</span></div>
-            <input type="range" id="heldDays" min="0" max="45" value="7">
+            <input type="range" id="heldDays" min="0" max="10" value="7">
           </div>
           <canvas id="loyalChart" height="120"></canvas>
           <div class="loyal__out">
@@ -427,7 +420,7 @@
     </div>
     <div class="footer__cols">
       <div><b>Product</b><a href="#vaults">Vaults</a><a href="#yield">Yield</a><a href="#distribution">Distribution</a></div>
-      <div><b>Community</b><a href="#">X / Twitter</a><a href="#">Telegram</a><a href="#">Discord</a></div>
+      <div><b>Community</b><a href="https://x.com/vaultdotfamily" target="_blank" rel="noopener">X / Twitter</a><span class="soon">Telegram<i>soon</i></span><span class="soon">Discord<i>soon</i></span></div>
       <div><b>Legal</b><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Risk</a></div>
     </div>
   </div>

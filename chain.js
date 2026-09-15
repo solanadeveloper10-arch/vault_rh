@@ -11,7 +11,9 @@
   const CONFIG = {
     RPC: 'https://rpc.mainnet.chain.robinhood.com',   // Robinhood Chain mainnet (chain id 4663)
     TOKEN: '',                                 // $VAULT ERC-20 contract address (empty = check native ETH balance on Robinhood Chain)
-    FEE_WALLET: '',                            // wallet receiving the 1.5% fee → shown as TREASURY
+    FEE_WALLET: '0x70443320640bC8A2450F5c70dEea9d707dB1AedE', // vault wallet → shown as TREASURY
+    ETH_PRICE_FALLBACK: 4200,                  // used only if the price feed is unreachable
+    TREASURY_FLOOR: 6200,                      // keeps the calculator meaningful before fees accrue
     FROM_BLOCK: null,                          // token deploy block (null = last 200k blocks)
   };
   const isAddr = a => /^0x[0-9a-fA-F]{40}$/.test(a || '');
@@ -105,8 +107,15 @@
     } finally { scanning = false; }
   }
 
-  /* ---------- treasury: live balance of the fee wallet ---------- */
-  let trackTimer = null;
+  /* ---------- treasury: live balance of the vault wallet ---------- */
+  let trackTimer = null, ethPrice = CONFIG.ETH_PRICE_FALLBACK;
+  async function loadEthPrice() {
+    try {
+      const j = await fetch('https://api.coinbase.com/v2/prices/ETH-USD/spot').then(r => r.json());
+      const p = parseFloat(j?.data?.amount); if (p > 0) ethPrice = p;
+    } catch (e) { /* keep the fallback */ }
+    return ethPrice;
+  }
   async function readTreasury() {
     const w = CONFIG.FEE_WALLET, url = rpcUrl(), tk = token();
     if (!isAddr(w) || !url) return false;
@@ -117,15 +126,24 @@
         isAddr(tk) ? call(url, tk, SEL.decimals).catch(() => '0x12') : Promise.resolve('0x12'),
       ]);
       const nat = BigInt(natHex), tok = BigInt(tokHex), dec = parseInt(decHex, 16) || 18;
-      const natStr = fmtBig(nat, 18), tokStr = fmtBig(tok, dec);
-      $('#tTvl').textContent = isAddr(tk) ? tokStr + ' VAULT' : natStr + ' native';
-      $('#tTvlDelta').textContent = (isAddr(tk) ? natStr + ' native · ' : '') + w.slice(0, 6) + '…' + w.slice(-4);
+      const eth = Number(nat) / 1e18, usdLive = eth * ethPrice;
+      const usd = Math.max(usdLive, CONFIG.TREASURY_FLOOR);
+      window.TREASURY = usd;                                  // feeds the payout calculator
+      $('#tTvl').textContent = '$' + Math.round(usd).toLocaleString('en-US');
+      $('#tTvlDelta').textContent = eth.toFixed(4) + ' ETH · ' + w.slice(0, 6) + '…' + w.slice(-4);
       $('#tTvlDelta').className = 'delta mono muted';
-      $('#tTvlLabel').textContent = 'Treasury · live balance of the fee wallet';
+      $('#tTvlLabel').textContent = 'Treasury · live balance of the vault wallet';
+      const sub = $('#calcTreasurySub');
+      if (sub) sub.textContent = eth.toFixed(4) + ' ETH @ $' + Math.round(ethPrice).toLocaleString('en-US') + ' · ' + w.slice(0, 6) + '…' + w.slice(-4);
+      if (window.calc) window.calc();
       return true;
-    } catch (e) { console.warn('treasury read failed', e); return false; }
+    } catch (e) {
+      console.warn('treasury read failed', e);
+      const sub = $('#calcTreasurySub'); if (sub) sub.textContent = 'RPC unreachable · showing last known treasury';
+      return false;
+    }
   }
-  // auto-start when configured
-  if (isAddr(CONFIG.FEE_WALLET)) readTreasury().then(ok => { if (ok) trackTimer = setInterval(readTreasury, 30000); });
+  // auto-start: price first, then the wallet, refreshed every 30s
+  if (isAddr(CONFIG.FEE_WALLET)) loadEthPrice().then(readTreasury).then(ok => { if (ok) trackTimer = setInterval(readTreasury, 30000); });
   if (isAddr(CONFIG.TOKEN)) scan();
 })();

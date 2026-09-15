@@ -7,7 +7,7 @@ All numbers are from the site calculator at a conservative 100% vault APR; the a
 Facts to keep straight
 - 1.5% fee on every trade, 100% → treasury → Hyperliquid vault (auto-picked, top APR, TVL ≥ $1M, age ≥ 120d). Currently BredoStrategy.
 - Epoch = 7 days. Snapshot every Monday 00:00 UTC, USDC paid to wallets, no claim. Launched Sep 15 · epoch #01 snapshot Sep 22.
-- Multiplier by days held: day 0 ×0 → day 7 ×2 → +0.1/day → ×4 at day 27. Selling restarts the counter for what you sold.
+- Multiplier by days held: day 0 ×0, growing every day to ×2 at day 7. Seven days is the cap. Selling restarts the counter for what you sold.
 - Eligible = wallet holds $VAULT on Robinhood Chain. Empty wallet = sybil. Team: 0% fee, 0% supply, 1% of weekly yield after the epoch.
 
 ---
@@ -145,7 +145,7 @@ USDC lands in your wallet. No claim button.
 **5/**
 Step 4 — Days held.
 Your share = your balance × a multiplier that only depends on how many days you’ve held.
-Day 7 = ×2. Day 27 = ×4. Day 0 = nothing.
+Day 7 = ×2, and that is the cap. Day 0 = nothing.
 
 Principal never leaves the vault. Only the yield is paid.
 `[chart: 02_flow]`
@@ -194,7 +194,7 @@ Per holder, week 8, held 7 days (×2):
 5M → ≈ $380
 20M → ≈ $1,520
 
-Hold 27 days → ×4 → double it.
+Held less than a week? The multiplier scales down with you.
 `[chart: 05_per_holder]`
 
 **5/**
@@ -229,7 +229,7 @@ Excluded = the difference. Their share goes to verified.
 **4/**
 Splitting a bag into 200 wallets doesn’t help either: 200 wallets × 0 days held = 200 × ×0.
 
-One wallet, 27 days, ×4. That’s the only strategy that pays.
+One wallet, one full week, ×2. That’s the only strategy that pays.
 
 ---
 
@@ -243,18 +243,18 @@ Your payout = balance × multiplier.
 The multiplier grows every single day you hold without selling:
 
 day 1 → ×0.29
+day 2 → ×0.57
 day 4 → ×1.14
-day 7 → ×2
-day 14 → ×2.7
-day 27 → ×4 (cap)
+day 6 → ×1.71
+day 7 → ×2 (cap)
 `[chart: 08_multiplier_curve]`
 
 **3/**
 Same bag, different patience. 1M $VAULT, week 8:
 
 1 day → $11
+4 days → $43
 7 days → $76
-27 days → $152
 
 Nothing to lock. Just don’t sell.
 `[chart: 09_days_held_payout]`
@@ -291,7 +291,7 @@ next snapshot: Monday 00:00 UTC
 No.
 The part you kept keeps its days.
 The part you sold starts over.
-Hold 7 → ×2. Hold 27 → ×4.
+Hold a full week → ×2. That’s the max.
 
 **E · team share**
 "how does the team make money"
@@ -313,8 +313,8 @@ top multiplier this week: ×___
 Next snapshot: next Monday. Counter keeps running.
 
 **H · day reminder**
-Day 11 of holding = ×2.4.
-Day 27 = ×4.
+Day 4 of holding = ×1.14.
+Day 7 = ×2, the cap.
 Nothing to do. Just don’t sell.
 
 ---
@@ -325,7 +325,7 @@ Nothing to do. Just don’t sell.
 Trade fees → Hyperliquid vault → USDC for loyal holders. Paid every Monday. Hold longer, earn more.
 
 **Listing**
-$VAULT on Robinhood Chain. 100% of the 1.5% trade fee is deposited into the top-APR Hyperliquid vault, auto-rotated weekly. Yield is paid in USDC every 7 days to wallets holding the token, weighted by days held (×2 at day 7, ×4 at day 27). Team: 0% supply, 1% of yield.
+$VAULT on Robinhood Chain. 100% of the 1.5% trade fee is deposited into the top-APR Hyperliquid vault, auto-rotated weekly. Yield is paid in USDC every 7 days to wallets holding the token, weighted by days held (×2 at day 7, capped there). Team: 0% supply, 1% of yield.
 
 ---
 
@@ -340,7 +340,7 @@ $VAULT on Robinhood Chain. 100% of the 1.5% trade fee is deposited into the top-
 | 05_per_holder | T2/4 | Week-8 payout by bag size, 7 days held |
 | 06_holder_score | T3/2 | Eligible vs Sybil, one on-chain check |
 | 07_verified_vs_excluded | T3/3 | Still holding vs sold out |
-| 08_multiplier_curve | T4/2, H | Multiplier by days held, ×2 at 7, ×4 at 27 |
+| 08_multiplier_curve | T4/2, H | Multiplier by days held, ×2 at day 7 (cap) |
 | 09_days_held_payout | T4/3, D | 1M tokens, payout by days held |
 | 10_treasury_vs_pool | T4/5 | Principal stays, yield paid weekly |
 | 11_no_staking | T0/3 | No staking / claiming, you hold, USDC shows up |

@@ -30,7 +30,7 @@ def clean(ax, left=False, bottom=True):
     ax.tick_params(length=0, labelsize=17)
 def save(f, n): f.savefig(os.path.join(OUT, n), dpi=100); plt.close(f); print(n)
 def lab(ax, x, y, t, size=22, color=TEXT): ax.text(x, y, t, ha="center", va="bottom", fontsize=size, color=color, family=MONO)
-def mult(d): return 0 if d <= 0 else round(d * 2 / 7, 2) if d <= 7 else min(4, round(2 + (d - 7) * 0.1, 2))
+def mult(d): return 0 if d <= 0 else min(2, round(d * 2 / 7, 2))
 
 # 01 fee: 100% to vault
 f = fig(r"Every \$100 traded → \$1.50 goes into the vault", "1.5% fee on every buy and sell. 100% of it goes to the treasury on Hyperliquid.", foot=False)
@@ -80,13 +80,13 @@ save(f, "04_pool_growth.png")
 # 05 per holder week 8, 7 days held (×2), avg ×2
 pool8 = pools[-1]; elig = 1e9 * 0.42
 bags = [("100K", 1e5), ("1M", 1e6), ("5M", 5e6), ("20M", 2e7)]
-f = fig("What one holder gets in week 8", "Good scenario. Held 7 days (×2). Share = your tokens × multiplier ÷ everyone’s (42% of supply verified).")
+f = fig("What one holder gets in week 8", "Good scenario. Held a full week (×2, the cap). Share = your tokens × multiplier ÷ everyone’s (42% of supply verified).")
 ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax)
 vals = [pool8 * b / elig for _, b in bags]
 ax.bar(range(4), vals, color=[LIME_DIM, LIME, LIME, LIME], width=0.55)
 ax.set_xticks(range(4)); ax.set_xticklabels([f"{n} $VAULT" for n, _ in bags], fontsize=18)
 for i, v in enumerate(vals): lab(ax, i, v + 30, f"${v:,.0f}", 26)
-ax.set_ylim(0, 1850); ax.text(0, 1600, "in USDC, for that one week.\nHold 27 days → ×4 → double these numbers.", fontsize=17, color=MUTED, va="top")
+ax.set_ylim(0, 1850); ax.text(0, 1600, "in USDC, for that one week.\nHold less than 7 days and the multiplier scales down with you.", fontsize=17, color=MUTED, va="top")
 save(f, "05_per_holder.png")
 
 # 06 holder check: eligible vs sybil
@@ -109,23 +109,23 @@ f.text(0.5, 0.25, "Excluded wallets don’t get a smaller slice. They get zero.\
 save(f, "07_verified_vs_excluded.png")
 
 # 08 multiplier curve
-f = fig("Every day you hold, your multiplier grows", "0 days → nothing. Day 7 → ×2. Then +0.1 per day up to ×4 at day 27. No tiers, no cliffs.")
+f = fig("Every day you hold, your multiplier grows", "0 days → nothing. Day 7 → ×2, and that is the cap. No tiers, no cliffs, nothing to chase after a week.")
 ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax, left=True)
-days = list(range(0, 31)); ms = [mult(d) for d in days]
+days = list(range(0, 15)); ms = [mult(d) for d in days]
 ax.fill_between(days, ms, color=LIME, alpha=.18); ax.plot(days, ms, color=LIME, lw=3.5)
-for d in (1, 7, 14, 27): ax.plot([d], [mult(d)], "o", ms=11, mfc=BG, mec=LIME, mew=2.5); ax.text(d, mult(d) + 0.22, f"day {d} · ×{mult(d):g}", ha="center", fontsize=17, family=MONO)
-ax.set_xlim(0, 30); ax.set_ylim(0, 4.7); ax.set_yticks([0, 1, 2, 3, 4]); ax.set_yticklabels(["×0", "×1", "×2", "×3", "×4"], fontsize=15)
-ax.set_xticks([0, 7, 14, 21, 27]); ax.set_xticklabels(["day 0", "day 7", "day 14", "day 21", "day 27"], fontsize=16)
+for d in (1, 4, 7): ax.plot([d], [mult(d)], "o", ms=11, mfc=BG, mec=LIME, mew=2.5); ax.text(d, mult(d) + 0.11, f"day {d} · ×{mult(d):g}" + (" max" if d >= 7 else ""), ha="center", fontsize=17, family=MONO)
+ax.set_xlim(0, 14); ax.set_ylim(0, 2.45); ax.set_yticks([0, 0.5, 1, 1.5, 2]); ax.set_yticklabels(["×0", "×0.5", "×1", "×1.5", "×2"], fontsize=15)
+ax.set_xticks([0, 2, 4, 7, 10, 14]); ax.set_xticklabels(["day 0", "day 2", "day 4", "day 7", "day 10", "day 14"], fontsize=16)
 save(f, "08_multiplier_curve.png")
 
 # 09 payout per 1M tokens by days held (week 8 pool)
-f = fig("Same bag, different patience", "1M $VAULT in week 8 (good scenario). Only the days held change.")
+f = fig("Same bag, different patience", "1M $VAULT in week 8 (good scenario). Only the days held change. Seven days is the cap.")
 ax = f.add_axes([0.08, 0.2, 0.86, 0.56]); clean(ax)
-ds = [1, 3, 7, 14, 27]; vals = [pool8 * 1e6 * mult(d) / (elig * 2) for d in ds]
+ds = [1, 2, 4, 6, 7]; vals = [pool8 * 1e6 * mult(d) / (elig * 2) for d in ds]
 ax.bar(range(5), vals, color=[LIME_DIM, LIME_DIM, LIME, LIME, LIME], width=0.55)
 ax.set_xticks(range(5)); ax.set_xticklabels([f"{d} day{'s' if d > 1 else ''}\n×{mult(d):g}" for d in ds], fontsize=17)
 for i, v in enumerate(vals): lab(ax, i, v + 3, f"${v:,.0f}", 24)
-ax.set_ylim(0, 180); ax.text(0, 160, "Selling restarts the counter for the part you sold.\nThe part you keep holds its days.", fontsize=16, color=MUTED, va="top")
+ax.set_ylim(0, 105); ax.text(0, 95, "Selling restarts the counter for the part you sold.\nThe part you keep holds its days.", fontsize=16, color=MUTED, va="top")
 save(f, "09_days_held_payout.png")
 
 # 10 treasury vs pool weekly
