@@ -37,15 +37,24 @@ Nothing else needs editing. No build step, no dependencies.
 
 ## How the numbers are derived
 
-**Holder check.** `balanceOf(wallet)` at `TOKEN`. Any non-zero balance → Eligible.
-Zero → Sybil. The cluster and activity rows are cosmetic in v0.1 and always pass.
+**Holder check.** `balanceOf(wallet)` at `TOKEN`, valued with the DexScreener price.
+At least `MIN_USD` worth → Eligible. Less → Sybil, same rule the scan uses. The cluster and activity rows are cosmetic in v0.1 and always pass.
 With `TOKEN` empty the check falls back to the wallet's native balance, so the page
 still works before the token exists.
 
-**Holder scan.** Reads `Transfer` logs and replays them into a balance map.
-*Scanned* = every address that ever received the token. *Verified* = the subset with
-a balance greater than zero right now. *Excluded* = the difference. Block ranges are
-fetched in chunks and the chunk shrinks automatically when the RPC refuses a range.
+**Holder scan.** Two passes over real chain data:
+
+1. `eth_getLogs` collects every address that ever received the token → **scanned**.
+   Ranges are fetched four at a time and a range that keeps failing is split in half.
+2. The current `balanceOf` of each of those addresses is read through **Multicall3**
+   (`0xcA11bde05977b3631167028862bE2a173976CA11`, deployed on Robinhood Chain) in
+   groups of 250, so ~2,700 wallets cost about a dozen `eth_call`s instead of 2,700.
+   A wallet still worth at least `MIN_USD` is **verified**; everyone else sold out or
+   is left with dust and counts as **excluded**.
+
+Log replay alone is not used as a balance: it only knows the transfers inside the
+scanned window. The result is cached in `localStorage`, so a repeat visit paints the
+last numbers instantly and refreshes them in the background.
 
 **Treasury.** Native balance of `FEE_WALLET`, converted with a live ETH price from
 Coinbase (falls back to `ETH_PRICE_FALLBACK`). Refreshes every 30 seconds.
@@ -61,8 +70,10 @@ and the multiplier runs from ×0 at day 0 to ×2 at day 7, capped there.
 | Chain | Robinhood Chain mainnet, chain id 4663 |
 | Contract | `0x39dbed3a2bd333467115de45665cc57f813c4571` |
 | Token | Pons (PONS), 18 decimals, 1,000,000,000 supply |
-| Example holder | `0x907d1d174569b11624bdcefd20dcef27600237f8` → 66,602 PONS → **Eligible** |
+| Price feed | DexScreener, PONS/WETH on Uniswap v3 |
+| Example holder | `0x907d1d174569b11624bdcefd20dcef27600237f8` → ~54,000 PONS → **Eligible** |
 | Example sold out | `0x6e2a35a7ad683cf634d91492d73bb7ff774c6919` → 0 PONS → **Sybil** |
+| Last scan | 2,658 wallets ever received · 1,695 still hold ≥ $1 · 963 excluded (36.2%) |
 
 This is a placeholder contract used to prove the on-chain wiring works end to end.
 Replace it with the $VAULT contract at launch.
