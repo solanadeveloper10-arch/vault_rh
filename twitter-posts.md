@@ -1,379 +1,271 @@
-# $VAULT — Twitter content pack
+# $VAULT — posting plan + content pack
 
-Voice: Hyperliquid-terminal precision + Robinhood-clean copy + a little meme. Short lines. Numbers in monospace-feel. One meme per thread max, never in the "rules" tweets.
-All numbers below come from the site's simulation defaults. Swap once real on-chain data exists.
+Voice: terminal-precise, short lines, one number per line, a little wit. English, X/Twitter.
+Images live in `charts/` (1600×900). `[chart: NN]` = attach that PNG. `[img: …]` = screenshot of the site section.
+All numbers are from the site calculator at a conservative 100% vault APR; the active vault (BredoStrategy) prints far more on paper — never promise it.
 
-Legend: `[img]` = screenshot from the site section named. `[chart: NN]` = image from `charts/NN_*.png` (1600×900, ready to attach).
+Facts to keep straight
+- 3% fee on every trade, 100% → treasury → Hyperliquid vault (auto-picked, top APR, TVL ≥ $1M, age ≥ 120d). Currently BredoStrategy.
+- Epoch = 7 days. Snapshot every Monday 00:00 UTC, USDC paid to wallets, no claim. Launched Sep 15 · epoch #01 snapshot Sep 22.
+- Multiplier by days held: day 0 ×0 → day 7 ×2 → +0.1/day → ×4 at day 27. Selling restarts the counter for what you sold.
+- Eligible = wallet holds $VAULT on Robinhood Chain. Empty wallet = sybil. Team: 0% fee, 0% supply, 1% of weekly yield after the epoch.
 
 ---
 
-## Thread 1 — Project logic ("trade fees in, USDC out")
+## 14-day posting plan
+
+| Day | Date | Post | Image |
+|-----|------|------|-------|
+| 1 | Tue Sep 15 (launch) | Thread 1 · How it works | 01, 02 |
+| 1 | evening | Post A · launch line | banner-classic |
+| 2 | Sep 16 | Post C · live numbers (treasury, holders) | [img: hero terminal] |
+| 3 | Sep 17 | Thread 3 · Eligible or sybil | 06, 07 |
+| 4 | Sep 18 | Post D · "sold some, am I out?" | 09 |
+| 5 | Sep 19 | Thread 2 · What the numbers look like | 03, 04, 05 |
+| 6 | Sep 20 | Post B · one-liner | — |
+| 7 | Sep 21 | Post F · "snapshot in 24h" countdown | [img: next epoch panel] |
+| 8 | Mon Sep 22 | Post G · epoch #01 paid (real pool, real holder count) | [img: epoch timeline] |
+| 9 | Sep 23 | Thread 4 · Days held = multiplier | 08, 09, 10 |
+| 10 | Sep 24 | Post C · live numbers | [img: hero terminal] |
+| 11 | Sep 25 | Post E · team share | 01 |
+| 12 | Sep 26 | Post H · "day 11 of holding = ×2.4" reminder | 08 |
+| 13 | Sep 27 | Post B variant · vault rotation status | [img: vault table] |
+| 14 | Sep 28 | Post F · snapshot #02 in 24h | [img: next epoch panel] |
+
+After week 2: every Monday = payout post with real numbers; every Thursday = one educational thread rerun or a chart; daily = live-numbers post C.
+
+---
+
+## Thread 1 — How it works (launch day)
 
 **1/**
-Most tokens have one utility: hoping the next guy pays more.
+$VAULT is live on Robinhood Chain.
 
-$VAULT has a different one: a treasury that earns on Hyperliquid and pays you in USDC every month.
+Every trade pays a fee. The fee earns yield on Hyperliquid. The yield is paid to holders in USDC every 7 days.
 
-Here's the whole machine in 6 tweets 🧵
+Here’s the whole machine 🧵
 
 **2/**
 Step 1 — Fee.
-Every buy and sell of $VAULT on Robinhood Chain takes 3%.
+3% on every buy and sell.
+100% of it goes to the treasury. Not 95, not 80. All of it.
 
-→ 100% goes to the treasury
-→ 0% anywhere else
-
-Team takes 0% of the fee. 0% of supply. We earn 1% of each month's yield, after the epoch — same boat as you.
+Team takes 0% of the fee and 0% of supply.
 `[chart: 01_fee_split]`
 
 **3/**
-Step 2 — Bridge.
-Fees are bridged from Robinhood Chain to HyperEVM and deposited into a Hyperliquid vault.
+Step 2 — Vault.
+The treasury is bridged to HyperEVM and deposited into the top-APR Hyperliquid vault that passes policy (TVL ≥ $1M, age ≥ 120 days).
 
-Not a random vault. The top-APR vault that passes policy:
-• TVL ≥ $1M
-• age ≥ 90 days
-
-Currently: Enjoyooor V3.
+Right now that’s BredoStrategy. Nobody picks it. It picks itself, every week.
 
 **4/**
-Step 3 — Rotation.
-Nobody picks the vault. Not you, not us.
-
-On the 1st of every month the treasury moves to whichever vault ranks #1 under the policy. If the current one drops out, it rotates. Automatically.
-
-The engine picks itself.
+Step 3 — Epoch.
+Every Monday 00:00 UTC: snapshot.
+Vault yield since last Monday = the pool.
+99% to holders, 1% to the team.
+USDC lands in your wallet. No claim button.
 
 **5/**
-Step 4 — Payout.
-Monthly epoch. Vault yield is snapshotted: 99% split pro-rata among verified holders, 1% to the team. Paid in USDC straight to your wallet. No claim button.
+Step 4 — Days held.
+Your share = your balance × a multiplier that only depends on how many days you’ve held.
+Day 7 = ×2. Day 27 = ×4. Day 0 = nothing.
 
-The principal stays in the vault and keeps compounding. Only yield is distributed.
+Principal never leaves the vault. Only the yield is paid.
 `[chart: 02_flow]`
 
 **6/**
-Step 5 — Sybil shield.
-Only wallets that pass the holder score get a share. Splitting a bag across 200 fresh wallets gets you nothing.
+Launched Sep 15. First snapshot Sep 22.
+Hold through the week, check your status on the site, get paid Monday.
 
-Fewer eligible wallets = bigger slice for the real ones.
-
-**7/**
-So the whole product is a bank transfer.
-
-Launched Sep 08. Epoch #01 snapshot Oct 01.
-Simulate your payout → [site link]
-`[img: hero terminal]`
+Trade fees → Hyperliquid vault → USDC for loyal holders.
+[site link]
 
 ---
 
-## Thread 2 — Expected metrics at a good launch
+## Thread 2 — What the numbers look like
 
 **1/**
 "Wen numbers?"
 
-Here's what the $VAULT treasury looks like at three launch scenarios. All simulated, all from the calculator on the site. 🧵
+Three volume scenarios, one conservative assumption (100% vault APR), all from the calculator on the site. 🧵
 
 **2/**
-The only two inputs that matter:
-• daily trading volume
-• vault APR
+Every $100 traded → $3 into the vault. Per 7-day epoch:
 
-Fees to vault per month = volume × 30 × 3% = 3% of monthly volume. All of it.
+quiet   $500K/day → $105K
+good    $2M/day   → $420K
+degen   $5M/day   → $1.05M
 
-Everything else follows.
-
-**3/**
-Fees flowing into the vault per month:
-
-quiet   $500K/day → $450K
-good    $2M/day   → $1.8M
-degen   $5M/day   → $4.5M
-
-That's the treasury growing every single month, before any yield.
+That’s the treasury growing every week before any yield.
 `[chart: 03_fees_by_scenario]`
 
-**4/**
-Now the yield. To stay honest we model 100% APR (~8.3%/mo), even though the active vault prints far more on paper right now.
+**3/**
+The pool. Good scenario, 100% APR, 99% to holders:
 
-Holder pool (99% of yield), month 1 → month 3, "good" scenario:
-M1 ≈ $156K
-M2 ≈ $304K
-M3 ≈ $453K
+week 1 ≈ $8K
+week 4 ≈ $32K
+week 8 ≈ $64K
 
-Pool grows because principal never leaves.
+It grows because nothing is ever withdrawn from the vault.
 `[chart: 04_pool_growth]`
 
-**5/**
-What that means per holder.
+**4/**
+Per holder, week 8, held 7 days (×2):
 
-Assume 5,000 verified wallets and 42% of supply eligible after the sybil filter.
+100K $VAULT → ≈ $15
+1M → ≈ $152
+5M → ≈ $760
+20M → ≈ $3,050
 
-Average verified holder, month 3: ≈ $91 in USDC.
-Holder with 1M $VAULT (0.1% supply): ≈ $1,080.
-Holder with 5M: ≈ $5,400.
+Hold 27 days → ×4 → double it.
 `[chart: 05_per_holder]`
 
-**6/**
-Six days after launch, real numbers:
-• treasury in vault: $85.5K
-• 24h inflow: +$14.2K
-• verified holders: 1,204 / 2,870 wallets
-
-First payout: Oct 01. 16 days.
-`[img: terminal]`
-
-**7/**
-The number that actually matters isn't APR. It's volume.
-
-Every trade, buy or sell, feeds the vault. Even paper hands pay the diamond hands.
-
-Thank you for your service, sers. 🫡
+**5/**
+The active vault shows an APR ten times higher than what we model here. We don’t promise that. We model 100% and let Mondays speak.
 
 ---
 
-## Thread 3 — Anti-sybil: "money goes to enthusiasts, not farms"
+## Thread 3 — Eligible or sybil
 
 **1/**
-Every "rewards for holders" token dies the same way: one guy, 400 wallets, 90% of the airdrop.
+Every "rewards for holders" token dies the same way: one guy, 400 wallets.
 
-$VAULT has a holder score. Here's how it decides who gets paid. 🧵
+$VAULT has one check. It runs on-chain, live, and you can run it yourself on the site. 🧵
 
 **2/**
-Five checks, weighted, 0–100:
+The check: does the wallet hold $VAULT on Robinhood Chain right now?
 
-• wallet age ≥ 30 days — 20
-• time-weighted balance this epoch — 25
-• not funded from a known cluster — 30
-• balance ≥ 0.001% of supply — 10
-• organic on-chain activity — 15
+Yes → ELIGIBLE. Paid Monday.
+No → SYBIL. Gets nothing.
 
-Score ≥ 60 → verified.
+That’s it. Paste any address on the site, see the answer from the RPC.
 `[chart: 06_holder_score]`
 
 **3/**
-Two checks are mandatory no matter the score:
+Bought once, sold everything, waiting for the airdrop? You’re in "scanned", not in "verified".
 
-1) cluster check
-2) non-zero time-weighted balance
-
-Fresh wallet funded from the same source as 30 others? Flagged as a cluster. Whole cluster excluded. Doesn't matter how old the wallets are.
-
-**4/**
-"Time-weighted balance" is the anti-snapshot-farming part.
-
-Your share = your average balance over the epoch, not your balance at the snapshot.
-
-Buy 1M tokens the night before Oct 01? You held for 1 day out of 30. You earn 1/30th. Congrats.
-
-**5/**
-Last snapshot from the site:
-
-wallets scanned   2,870
-verified          1,204
-excluded          1,666
-supply excluded   58%
-
-That 58% doesn't vanish. It flows to the 42% that's real.
+Scanned = everyone who ever received the token.
+Verified = wallets holding right now.
+Excluded = the difference. Their share goes to verified.
 `[chart: 07_verified_vs_excluded]`
 
-**6/**
-The farm math, for anyone still thinking about it:
+**4/**
+Splitting a bag into 200 wallets doesn’t help either: 200 wallets × 0 days held = 200 × ×0.
 
-200 wallets × 0 payout = 0.
-1 wallet with a 3-epoch streak = ×1.3 multiplier.
-
-Sybil-ing $VAULT is the only strategy with negative expected value.
-
-**7/**
-Paste any address on the site and see its score.
-Real holders don't need to trust us. They can check.
-
-[site link] → "Real holders"
+One wallet, 27 days, ×4. That’s the only strategy that pays.
 
 ---
 
-## Thread 4 — Distribution: "loyal, not locked"
+## Thread 4 — Days held = multiplier
 
 **1/**
-Reward tokens usually give you a choice: get paid, or be free.
-
-$VAULT does both. No lock-ups, monthly USDC, and you can still take profit. Here's how the distribution works. 🧵
+No lock-ups. No claim. And still, the longer you hold the more you get. Here’s how. 🧵
 
 **2/**
-The epoch.
-• 1st of every month, 00:00 UTC — snapshot
-• vault yield since last epoch = the pool
-• 99% split pro-rata by time-weighted balance, 1% to the team
-• paid in USDC within 48h, no claim needed
+Your payout = balance × multiplier.
+The multiplier grows every single day you hold without selling:
 
-Epoch #01 → Oct 01.
+day 1 → ×0.29
+day 4 → ×1.14
+day 7 → ×2
+day 14 → ×2.7
+day 27 → ×4 (cap)
+`[chart: 08_multiplier_curve]`
 
 **3/**
-Time-weighted share.
-Sell 40% of your bag on day 20 of 30?
+Same bag, different patience. 1M $VAULT, week 8:
 
-You still earn 100% for 20 days and 60% for the last 10.
-= 87% of a full-hold payout.
+1 day → $22
+7 days → $152
+27 days → $305
 
-You are not a hostage. You're a shareholder who trimmed.
-`[chart: 08_sell_mid_epoch]`
+Nothing to lock. Just don’t sell.
+`[chart: 09_days_held_payout]`
 
 **4/**
-Loyalty streak.
-Every consecutive epoch adds +10% to your payout.
-Caps at ×1.5 after five epochs.
-
-Trim up to 25% of your bag in an epoch → streak stays.
-Sell more than 25% → streak steps down ONE level. Never to zero.
-
-Only a full exit resets it.
-`[chart: 09_loyalty_streak]`
+Sold some? The counter restarts only for the part you sold. The part you keep holds its days.
+Bought more? New coins start at day 0, old coins keep counting.
 
 **5/**
-Why it's built this way:
-
-Hard lock-ups create exit stampedes on unlock day.
-Time-weighting + streak create a slow, boring, profitable reason to stay.
-
-Boring is the point. Boring is what gets paid on the 1st.
-
-**6/**
-Where the team's money comes from, since people ask:
-
-• 0% of the trade fee
-• 0% of supply
-• 1% of each epoch's yield, taken after the snapshot
-
-If holders don't get paid, we don't get paid. That's the whole alignment.
-
-**7/**
-Principal never leaves the vault.
-Only yield is distributed.
-
-So every month: treasury = last month + fees + retained yield.
-The pool you're splitting keeps getting bigger as long as people trade.
+And the vault itself never shrinks: fees go in every week, only yield comes out.
 `[chart: 10_treasury_vs_pool]`
 
-**8/**
-Try the "what if I sell mid-epoch" slider on the site. Move it. Watch the number.
-
-Then decide whether you want to be the guy who sold on day 29.
-
-[site link] → "Distribution"
-
 ---
 
-## Standalone posts (meme / short)
+## Standalone posts
 
-**A.**
-wen payout
-Oct 01.
-it's on the site.
-it's on the hero.
-it's on the countdown.
-Oct 01.
+**A · launch**
+$VAULT is live.
+3% fee → Hyperliquid vault → USDC every Monday.
+Day 0. Counter starts now.
 
-**B.**
-other tokens: "community"
-$VAULT: 1,204 verified wallets splitting vault yield in USDC on the 1st
+**B · one-liner**
+Trade fees → Hyperliquid vault → USDC for loyal holders.
+That’s the whole pitch.
 
-pick your definition
+**C · live numbers (post daily, fill from the site)**
+day N since launch
+treasury in vault: $___
+verified holders: ___ / ___ scanned
+next snapshot: Monday 00:00 UTC
+`[img: hero terminal]`
 
-**C.**
-day 6 since launch
-treasury: $85.5K
-payouts made: 0
-holders locked: 0
-vault APR: doing things
+**D · "I sold some, am I out?"**
+No.
+The part you kept keeps its days.
+The part you sold starts over.
+Hold 7 → ×2. Hold 27 → ×4.
 
-`[img: terminal]`
-
-**D.**
-"I sold some, am I out?"
-No. You held 20 days, you get paid for 20 days.
-Trim ≤25%, keep your streak.
-This is the least hostage-like situation in crypto.
-`[chart: 08_sell_mid_epoch]`
-
-**E.**
-Sybil farmers looking at the cluster graph
-`[img: cluster graph, red clusters circled]`
-"it's over"
-yes ser. it never started.
-
-**F.**
-The vault picks itself.
-The fees route themselves.
-The payout sends itself.
-The only manual step in $VAULT is you deciding to hold.
-
-**G.**
-Robinhood Chain for the token.
-HyperEVM for the treasury.
-Hyperliquid vaults for the yield.
-USDC for the payout.
-Memes for the vibes.
-Everything in its right place.
-
-**H.**
+**E · team share**
 "how does the team make money"
-1% of the monthly yield. After you. Not before. Not from the fee. Not from a pre-mine.
-We literally cannot get paid unless the vault pays you first.
+1% of the weekly yield. After the snapshot. After you.
+0% of the fee. 0% of supply.
+If holders don’t get paid, we don’t get paid.
+
+**F · countdown (Sunday)**
+Snapshot in 24h.
+Wallet holding $VAULT → eligible.
+Empty wallet → sybil.
+Check yours: [site link]
+
+**G · payout day (Monday, real numbers)**
+Epoch #N paid.
+pool: $___ USDC
+verified holders: ___
+top multiplier this week: ×___
+Next snapshot: next Monday. Counter keeps running.
+
+**H · day reminder**
+Day 11 of holding = ×2.4.
+Day 27 = ×4.
+Nothing to do. Just don’t sell.
 
 ---
 
-## Posting order (suggested, first 2 weeks)
+## Bio / listing descriptions
 
-| Day | Post |
-|-----|------|
-| 1 | Thread 1 (logic) + post G |
-| 2 | Post C (live numbers) |
-| 3 | Thread 3 (anti-sybil) |
-| 4 | Post E |
-| 5 | Thread 2 (metrics) |
-| 6 | Post A |
-| 7 | Thread 4 (distribution) |
-| 8 | Post D |
-| 9–13 | daily post C-style with fresh treasury numbers |
-| 14 | Countdown post: "Epoch #01 in 48h" + terminal screenshot |
+**Bio**
+Trade fees → Hyperliquid vault → USDC for loyal holders. Paid every Monday. Hold longer, earn more.
+
+**Listing**
+$VAULT on Robinhood Chain. 100% of the 3% trade fee is deposited into the top-APR Hyperliquid vault, auto-rotated weekly. Yield is paid in USDC every 7 days to wallets holding the token, weighted by days held (×2 at day 7, ×4 at day 27). Team: 0% supply, 1% of yield.
 
 ---
 
 ## Chart index (`charts/`)
 
-| File | Used in | One-line meaning |
-|------|---------|------------------|
-| 01_fee_split | T1/2 | Of every $100 traded, $3 goes into the vault |
-| 02_flow | T1/5 | Trade → fee → vault → yield → USDC for loyal holders |
-| 03_fees_by_scenario | T2/3 | Monthly inflow at $500K / $2M / $5M daily volume |
-| 04_pool_growth | T2/4 | Payout pool month 1→6, good scenario |
-| 05_per_holder | T2/5 | Month-3 payout for 100K / 1M / 5M / 20M bags |
-| 06_holder_score | T3/2 | Five checks, weights, two mandatory |
-| 07_verified_vs_excluded | T3/5 | 42% verified vs 58% excluded, excluded share flows to verified |
-| 08_sell_mid_epoch | T4/3, post D | Sell 40% on day 20 → still 87% of payout |
-| 09_loyalty_streak | T4/4 | ×1.0 → ×1.5 over five epochs |
-| 10_treasury_vs_pool | T4/6 | Principal stays and grows, yield paid out |
+| File | Used in | Meaning |
+|------|---------|---------|
+| 01_fee_split | T1/2, E | $3 of every $100 traded → vault, 100% |
+| 02_flow | T1/5 | Trade → fee → vault → yield → USDC |
+| 03_fees_by_scenario | T2/2 | Weekly inflow at $500K / $2M / $5M per day |
+| 04_pool_growth | T2/3 | Weekly holder pool, weeks 1–8 |
+| 05_per_holder | T2/4 | Week-8 payout by bag size, 7 days held |
+| 06_holder_score | T3/2 | Eligible vs Sybil, one on-chain check |
+| 07_verified_vs_excluded | T3/3 | Still holding vs sold out |
+| 08_multiplier_curve | T4/2, H | Multiplier by days held, ×2 at 7, ×4 at 27 |
+| 09_days_held_payout | T4/3, D | 1M tokens, payout by days held |
+| 10_treasury_vs_pool | T4/5 | Principal stays, yield paid weekly |
 
 Regenerate after changing numbers: `python3 charts/gen_charts.py`
-
----
-
-## Short project descriptions (bio / listing / launchpad)
-
-**Main**
-The token with a vault behind it.
-3% on every trade goes straight into a Hyperliquid vault. Hold through the month, stack that streak, farm the ×1.5 multiplier.
-Get paid in USDC on the 1st. Real holders only, sybils get nothing.
-
-**Short (bio-length)**
-Trade fees → Hyperliquid vault → USDC for loyal holders.
-hold the month, stack the streak, farm the ×1.5.
-paid on the 1st. no lock-ups. no farms.
-
-**Meme**
-gm the vault every single month.
-every trade feeds it, every epoch it pays you back in USDC.
-stack the streak, farm the multiplier, sell whenever. the vault doesn't hold hostages.
-
-**Technical (listing)**
-$VAULT on Robinhood Chain. 100% of the 3% trade fee is bridged to HyperEVM and deposited into the top-APR Hyperliquid vault, auto-rotated monthly. Yield is paid in USDC on the 1st to verified holders by time-weighted balance. Consecutive epochs stack a multiplier up to ×1.5.
