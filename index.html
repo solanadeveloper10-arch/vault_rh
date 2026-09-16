@@ -417,11 +417,116 @@
     <div class="footer__cols">
       <div><b>Product</b><a href="#vaults">Vaults</a><a href="#yield">Yield</a><a href="#distribution">Distribution</a></div>
       <div><b>Community</b><a href="https://x.com/vaultdotfamily" target="_blank" rel="noopener">X / Twitter</a><span class="soon">Telegram<i>soon</i></span><span class="soon">Discord<i>soon</i></span></div>
-      <div><b>Legal</b><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Risk</a></div>
+      <div><b>Legal</b><a href="#" data-legal="terms">Terms</a><a href="#" data-legal="privacy">Privacy</a><a href="#" data-legal="risk">Risk</a></div>
     </div>
   </div>
   <div class="footer__status mono"><span class="dot dot--live"></span> Online · Token: Robinhood Chain · Treasury: HyperEVM · Epoch #01 · v0.1 UI prototype</div>
 </footer>
+
+
+<!-- ===== LEGAL ===== -->
+<dialog class="legal" id="legal-terms">
+  <div class="legal__bar"><span class="legal__eyebrow mono">Legal · Terms of use</span><button class="legal__x" data-close aria-label="Close">✕</button></div>
+  <div class="legal__body">
+    <h2>Terms of use</h2>
+    <p class="legal__date mono">Version 0.1 · Vault is a prototype and these terms describe it as such.</p>
+
+    <h3>1. What this site is</h3>
+    <p>Vault is an interface. It displays public blockchain data and a payout estimate. It is not a broker, an exchange, a fund or a custodian, and it does not accept deposits.</p>
+
+    <h3>2. We never touch your funds</h3>
+    <p>The site holds no keys and moves no assets. It only makes read-only calls to a public node. It will never ask for a seed phrase or a private key, and any page that does is not us.</p>
+
+    <h3>3. The numbers are estimates</h3>
+    <p>Every figure in the calculator is a projection built from the treasury balance, the vault's reported performance and your own inputs. Past performance of a vault does not create an entitlement to anything. Distributions depend on yield that is actually realised, and in a losing week there is nothing to distribute.</p>
+
+    <h3>4. Who receives a distribution</h3>
+    <p>A wallet is eligible for an epoch if it holds the token at the snapshot. Its weight is its balance multiplied by a factor that grows with the number of days held and is capped once a full epoch has been held. The counter restarts each epoch. Selling restarts it for the amount sold.</p>
+
+    <h3>5. Fees and shares</h3>
+    <p>A fee is charged on each trade of the token and routed to the treasury. Yield earned by the treasury is reduced by the vault operator's share, which the vault itself sets, and by a one percent share for the team, taken after the snapshot. The remainder goes to eligible holders.</p>
+
+    <h3>6. Rules can change</h3>
+    <p>Parameters such as the epoch length, the multiplier curve and the eligibility threshold may be adjusted. Material changes will be published before the epoch they affect.</p>
+
+    <h3>7. No advice, no offer</h3>
+    <p>Nothing here is financial, investment, legal or tax advice, and nothing here is an offer or a solicitation to buy anything. You are responsible for deciding whether holding this token is appropriate for you and for your own tax position.</p>
+
+    <h3>8. Eligibility</h3>
+    <p>Do not use this site if you are in a jurisdiction where holding or trading such tokens is restricted, or if you are subject to sanctions.</p>
+
+    <h3>9. No warranty</h3>
+    <p>The site is provided as is. Public nodes fail, price feeds go stale and numbers on the page can be wrong or out of date. To the fullest extent permitted by law, we accept no liability for losses arising from use of this site or from holding the token.</p>
+  </div>
+</dialog>
+
+<dialog class="legal" id="legal-privacy">
+  <div class="legal__bar"><span class="legal__eyebrow mono">Legal · Privacy</span><button class="legal__x" data-close aria-label="Close">✕</button></div>
+  <div class="legal__body">
+    <h2>Privacy</h2>
+    <p class="legal__date mono">Short, because the site collects almost nothing.</p>
+
+    <h3>No accounts, no tracking</h3>
+    <p>There is no sign-up, no email, no password and no advertising or analytics script. We do not profile visitors and we do not sell anything about you, because we do not hold anything about you.</p>
+
+    <h3>What leaves your browser</h3>
+    <p>When you check an address, that address is sent to a public blockchain node so it can return the balance. Nothing else about you is attached to that request. The node operator, like any web host, sees the request and your IP address.</p>
+
+    <h3>Third parties the page talks to</h3>
+    <ul>
+      <li>A public Robinhood Chain node, for balances and transfer history.</li>
+      <li>The Hyperliquid API, for the active vault's performance.</li>
+      <li>DexScreener and Coinbase, for token and ETH prices.</li>
+    </ul>
+    <p>Each of these sees a request from your browser and applies its own privacy policy.</p>
+
+    <h3>What stays on your device</h3>
+    <p>The last holder scan and the last treasury reading are cached in your browser's local storage so the page opens with numbers instead of dashes. That cache never leaves your device and clearing site data removes it.</p>
+
+    <h3>Public by nature</h3>
+    <p>Balances, transfers and any distribution are recorded on a public blockchain. We cannot delete or hide them, and neither can anyone else.</p>
+  </div>
+</dialog>
+
+<dialog class="legal" id="legal-risk">
+  <div class="legal__bar"><span class="legal__eyebrow mono">Legal · Risk disclosure</span><button class="legal__x" data-close aria-label="Close">✕</button></div>
+  <div class="legal__body">
+    <h2>Risk disclosure</h2>
+    <p class="legal__date mono">Read this part before the marketing.</p>
+
+    <h3>You can lose everything</h3>
+    <p>This is a volatile token with no intrinsic value and no floor. Treat any amount you put in as money you are prepared to lose in full.</p>
+
+    <h3>The vault can lose money</h3>
+    <p>The treasury sits in a trading vault run by a third party. Its strategy uses leverage and its reported return can turn negative. A high historical rate is not a promise and says little about next week. In a losing epoch the payout is zero, and the treasury itself can shrink.</p>
+
+    <h3>Yield is not guaranteed</h3>
+    <p>Distributions exist only if the treasury has fees flowing in and the vault produces a profit. Low trading volume means a small treasury, and a small treasury means a payout that may not be worth the transfer.</p>
+
+    <h3>Technical risk</h3>
+    <p>Contracts can contain bugs. Bridges can fail. The vault operator can close the vault, change its strategy or withdraw. A public node can return stale or wrong data, which means a number on this page can be wrong at the moment you read it.</p>
+
+    <h3>Concentration and liquidity</h3>
+    <p>A large holder can move the price sharply. Liquidity can thin out, and the price you see may not be the price you get.</p>
+
+    <h3>Regulatory risk</h3>
+    <p>Rules for tokens that distribute income differ by country and are changing. Treatment of this token, including tax treatment, may change in ways that affect holders.</p>
+
+    <h3>Eligibility risk</h3>
+    <p>If your balance is below the threshold at the snapshot, or you sold during the epoch, you receive less or nothing. The rule is mechanical and there is no appeal.</p>
+  </div>
+</dialog>
+
+<script>
+  // legal documents open in place, no navigation away from the page
+  document.addEventListener('click', e => {
+    const open = e.target.closest('[data-legal]');
+    if (open) { e.preventDefault(); document.getElementById('legal-' + open.dataset.legal)?.showModal(); return; }
+    if (e.target.closest('[data-close]')) { e.target.closest('dialog')?.close(); return; }
+    const dlg = e.target.closest('dialog.legal');
+    if (dlg && e.target === dlg) dlg.close();          // click on the backdrop
+  });
+</script>
 
 <script src="app.js"></script>
 <script src="chain.js"></script>

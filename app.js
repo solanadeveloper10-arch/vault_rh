@@ -211,7 +211,7 @@
   /* ---------- simple calculator ---------- */
   let lastPool = 0;
   const TEAM_CUT = 0.01;                                     // team takes 1% of the yield after each epoch
-  const VAULT_CUT = 0.10;                                    // vault operator's share of the profit, taken at source
+  window.VAULT_CUT = 0.10;                                   // vault operator's share, replaced by the vault's own figure
   // Both are overwritten by chain.js from the real holder scan when it can derive them.
   window.ELIGIBLE = 0.42;                                    // share of supply held by verified wallets
   window.AVG_MULT = 2;                                       // average hold multiplier across those wallets
@@ -228,7 +228,7 @@
     $('#calcVaultName').textContent = v.name; $('#calcVaultApr').textContent = fmtPct(aprFor(v)) + ' APR';
     $('#calcVaultApr').className = 'mono ' + (apr >= 0 ? 'up' : 'down');
 
-    const yieldM = Math.max(0, treasury * apr / 52) * (1 - VAULT_CUT); // net vault yield over one 7-day epoch
+    const yieldM = Math.max(0, treasury * apr / 52) * (1 - (window.VAULT_CUT || 0)); // net vault yield over one 7-day epoch
     const team = yieldM * TEAM_CUT;
     const pool = yieldM - team;                                // distributed to verified holders
     const mult = holdMult(days);

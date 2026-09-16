@@ -9,7 +9,7 @@ const CONFIG = {
   RPC:         'https://rpc.mainnet.chain.robinhood.com',     // Robinhood Chain mainnet, chain id 4663
   TOKEN:       '0x39dbed3a2bd333467115de45665cc57f813c4571',  // ← the ERC-20 contract
   FEE_WALLET:  '0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB',  // ← wallet that collects the fee
-  VAULT:       '0xdfc24b077bc1425ad1dea75bcb6f8158e10df303',  // ← Hyperliquid vault holding the treasury
+  VAULT:       '0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7',  // ← Hyperliquid vault holding the treasury
   SCAN_DAYS:   7,                                             // history the holder scan aims for
   MAX_RANGES:  12,                                            // cap on eth_getLogs requests
   FROM_BLOCK:  null,                                          // deploy block for a full scan
@@ -64,8 +64,7 @@ Refreshes every 30 seconds, is cached in `localStorage` so a reload paints insta
 and keeps retrying on the next tick when a read fails. `TREASURY_FLOOR` is 0, so the
 figure on the page is whatever the wallet actually holds – nothing is padded.
 
-**Payout.** The vault's gross yield for one epoch is `treasury × APR ÷ 52`. The vault
-operator's cut comes off first, then the 1% team share, and the rest is split by
+**Payout.** The vault's gross yield for one epoch is `treasury × APR ÷ 52`. The vault operator's cut comes off first, then the 1% team share, and the rest is split by
 `balance × multiplier` across verified wallets. The eligible share of supply comes from
 the holder scan, not from an assumption. The multiplier runs from ×0 at day 0 to ×2 at
 day 7 and is capped there, restarting every epoch.
@@ -78,6 +77,7 @@ day 7 and is capped there, restarting every epoch.
 | Contract | `0x39dbed3a2bd333467115de45665cc57f813c4571` |
 | Token | Pons (PONS), 18 decimals, 1,000,000,000 supply |
 | Price feed | DexScreener, PONS/WETH on Uniswap v3 |
+| Active vault | BredoStrategy on Hyperliquid, operator's share read from the vault |
 | Treasury wallet | `0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB` → 0.008866 ETH ≈ $21 |
 | Example holder | `0x907d1d174569b11624bdcefd20dcef27600237f8` → ~54,000 PONS → **Eligible** |
 | Example sold out | `0x6e2a35a7ad683cf634d91492d73bb7ff774c6919` → 0 PONS → **Sybil** |

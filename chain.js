@@ -36,7 +36,7 @@
     RPC: 'https://rpc.mainnet.chain.robinhood.com',          // Robinhood Chain mainnet, chain id 4663
     TOKEN: '0x39dbed3a2bd333467115de45665cc57f813c4571',     // ← SWAP THIS for the $VAULT contract
     FEE_WALLET: '0xe9a0f656D0aABF40f47a54CD3F3147373a336dFB', // vault wallet → shown as TREASURY
-    VAULT: '0xdfc24b077bc1425ad1dea75bcb6f8158e10df303',       // ← Hyperliquid vault holding the treasury
+    VAULT: '0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7',       // ← Hyperliquid vault holding the treasury
     MIN_USD: 1,                                               // dust cutoff: below this a wallet counts as sold out
     SCAN_DAYS: 7,                                             // holder-scan window it aims for
     MAX_RANGES: 12,                                           // cap on eth_getLogs requests per scan
@@ -147,7 +147,9 @@
         body: JSON.stringify({ type: 'vaultDetails', vaultAddress: CONFIG.VAULT.toLowerCase() }),
       }).then(r => r.json());
       if (!d || !d.name) return;
-      const days = d.portfolio ? null : null;
+      // the operator's profit share comes from the vault itself, no need to assume it
+      const cut = Number(d.leaderCommission);
+      if (cut >= 0 && cut < 1) window.VAULT_CUT = cut;
       const info = { name: d.name, apr: Number(d.apr) * 100, tvl: Number(d.maxDistributable) || 0, leader: d.leader || CONFIG.VAULT };
       window.VAULT_INFO = info;
       if (window.setVault) window.setVault(info);
